@@ -16,6 +16,7 @@ export default [
     },
     rules: {
       ...tsPlugin.configs.recommended.rules,
+      '@typescript-eslint/no-explicit-any': 'error',
     },
   },
   {
@@ -23,6 +24,7 @@ export default [
       '.yarn/',
       'node_modules/',
       'dist/',
+      'packages/**/dist/',
       '**/vite.config.*.timestamp*',
       '**/vitest.config.*.timestamp*',
     ],
