@@ -3,6 +3,8 @@ import type {
   ChapterOutline,
   ChapterOutlineItem,
   ChapterOutlineMilestone,
+  GeneratedTask,
+  TaskSchedule,
 } from './types.js';
 
 const FORM_QUESTION_TYPES: readonly QuestionType[] = [
@@ -31,6 +33,10 @@ const isStringArray = (value: unknown): value is string[] => {
 
 const isFiniteNumber = (value: unknown): value is number => {
   return typeof value === 'number' && Number.isFinite(value);
+};
+
+const isPositiveInteger = (value: unknown): value is number => {
+  return Number.isInteger(value) && value > 0;
 };
 
 const normalizeFormQuestion = (
@@ -198,5 +204,97 @@ export const parseChapterOutline = (
 
   return {
     chapters: chapters.map((chapter, index) => normalizeChapter(chapter, index)),
+  };
+};
+
+const normalizeGeneratedTask = (
+  task: unknown,
+  index: number,
+): GeneratedTask => {
+  if (!isRecord(task)) {
+    throw new Error(`Task at index ${index} is not an object`);
+  }
+
+  const {
+    day,
+    title,
+    objective,
+    description,
+    body,
+    estimatedMinutes,
+    optionalChallenge,
+    reflectionPrompt,
+  } = task;
+
+  if (!isPositiveInteger(day)) {
+    throw new Error(`Task at index ${index} has invalid day`);
+  }
+
+  if (!isNonEmptyString(title)) {
+    throw new Error(`Task at index ${index} is missing a title`);
+  }
+
+  if (!isNonEmptyString(objective)) {
+    throw new Error(`Task at index ${index} is missing an objective`);
+  }
+
+  if (!isNonEmptyString(description)) {
+    throw new Error(`Task at index ${index} is missing a description`);
+  }
+
+  if (!isNonEmptyString(body)) {
+    throw new Error(`Task at index ${index} is missing a body`);
+  }
+
+  if (!isFiniteNumber(estimatedMinutes) || estimatedMinutes <= 0) {
+    throw new Error(`Task at index ${index} has invalid estimatedMinutes`);
+  }
+
+  if (optionalChallenge !== undefined && optionalChallenge !== null && !isNonEmptyString(optionalChallenge)) {
+    throw new Error(`Task at index ${index} has invalid optionalChallenge`);
+  }
+
+  if (reflectionPrompt !== undefined && reflectionPrompt !== null && !isNonEmptyString(reflectionPrompt)) {
+    throw new Error(`Task at index ${index} has invalid reflectionPrompt`);
+  }
+
+  return {
+    day,
+    title,
+    objective,
+    description,
+    body,
+    estimatedMinutes,
+    ...(optionalChallenge ? { optionalChallenge } : {}),
+    ...(reflectionPrompt ? { reflectionPrompt } : {}),
+  };
+};
+
+export const parseTaskSchedule = (
+  content: string | null,
+): TaskSchedule => {
+  if (!content) {
+    throw new Error('OpenAI returned an empty task schedule response');
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(content);
+  } catch (error) {
+    throw new Error('Unable to parse OpenAI task schedule JSON');
+  }
+
+  if (!isRecord(parsed)) {
+    throw new Error('Task schedule payload must be an object');
+  }
+
+  const tasks = parsed['tasks'];
+
+  if (!Array.isArray(tasks)) {
+    throw new Error('Task schedule payload is missing tasks array');
+  }
+
+  return {
+    tasks: tasks.map((task, index) => normalizeGeneratedTask(task, index)),
   };
 };

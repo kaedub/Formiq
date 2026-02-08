@@ -1,91 +1,24 @@
 import type OpenAI from 'openai';
-import type { IntakeQuestionDto, StoryDto } from '@formiq/shared';
+import type { ChapterDto, IntakeQuestionDto, StoryDto } from '@formiq/shared';
 import type {
   AIService,
   AIServiceDependencies,
   ChapterOutline,
+  TaskGenerationContext,
+  TaskSchedule,
 } from './types.js';
-import { parseChapterOutline, parseFormDefinition } from './utils.js';
-
-const DEFAULT_MODEL = 'gpt-4o-mini';
-
-const SYSTEM_PROMPT = `
-You are FormIQ's intake form generator.
-Return a concise JSON object with this exact shape:
-{"questions":[{"id":"...", "prompt":"...", "questionType":"free_text|single_select|multi_select", "options":["..."], "position":0}]}
-- Use snake_case IDs.
-- Keep 4-6 questions tailored for onboarding a user who wants a goal-to-roadmap plan.
-- For free_text questions, return an empty options array.
-- Positions must start at 0 and increment by 1 in order.
-- Respond with JSON only, no additional text.
-`.trim();
-
-const STORY_CONTEXT_JSON_SCHEMA = {
-  type: 'object',
-  required: ['story'],
-  properties: {
-    story: {
-      type: 'object',
-      required: ['title', 'responses'],
-      properties: {
-        title: { type: 'string' },
-        responses: {
-          type: 'array',
-          items: {
-            type: 'object',
-            required: ['question', 'answers'],
-            properties: {
-              question: { type: 'string' },
-              answers: { type: 'array', items: { type: 'string' } },
-            },
-          },
-        },
-      },
-    },
-  },
-};
-
-const CHAPTER_OUTLINE_JSON_SCHEMA = {
-  type: 'object',
-  required: ['chapters'],
-  properties: {
-    chapters: {
-      type: 'array',
-      items: {
-        type: 'object',
-        required: ['title', 'summary', 'position', 'milestones'],
-        properties: {
-          title: { type: 'string' },
-          summary: { type: 'string' },
-          position: { type: 'number' },
-          milestones: {
-            type: 'array',
-            items: {
-              type: 'object',
-              required: ['title', 'description'],
-              properties: {
-                title: { type: 'string' },
-                description: { type: 'string' },
-                successCriteria: { type: 'array', items: { type: 'string' } },
-                estimatedDurationDays: { type: 'number' },
-              },
-            },
-          },
-        },
-      },
-    },
-  },
-};
-
-const CHAPTER_OUTLINE_PROMPT = `
-You are FormIQ's roadmap planner. Generate a concise chapter outline with milestones based on the provided story context.
-- Always conform to the CHAPTER_OUTLINE_JSON_SCHEMA.
-- Use the STORY_CONTEXT_JSON_SCHEMA as the contract for how story data is provided.
-- Derive 3-6 chapters that progress the user from start to finish. Keep titles action-oriented and summaries brief (one or two sentences).
-- Each chapter must include 2-4 milestones with specific, outcome-focused descriptions. Add successCriteria when helpful; include estimatedDurationDays when confident.
-- Keep language clear, directive, and free of filler. Do not restate questions; synthesize answers into actionable steps.
-- Respond with JSON only, no additional text.
-`.trim();
+import {
+  CHAPTER_OUTLINE_PROMPT,
+  DEFAULT_MODEL,
+  FORMGEN_SYSTEM_PROMPT,
+  TASK_GENERATION_PROMPT,
+} from './constants.js';
+import {
+  CHAPTER_OUTLINE_JSON_SCHEMA,
+  STORY_CONTEXT_JSON_SCHEMA,
+  TASK_SCHEDULE_JSON_SCHEMA,
+} from './schemas.js';
+import { parseChapterOutline, parseFormDefinition, parseTaskSchedule } from './utils.js';
 
 const buildStoryContextPayload = (story: StoryDto) => ({
   story: {
@@ -93,18 +26,23 @@ const buildStoryContextPayload = (story: StoryDto) => ({
     responses: story.responses.map((entry) => ({
       question: [
         entry.question.prompt,
-        entry.question.questionType !== 'free_text'
+        entry.question.questionType !== 'free_text' && entry.question.options.length > 0
           ? `Options: ${entry.question.options.join(', ')}`
           : null,
-      ]
-        .filter(Boolean)
-        .join(' '),
+      ].filter((part): part is string => Boolean(part)).join(' '),
       answers: entry.answer.values,
     })),
   },
 });
 
-class OpenAIAIService implements AIService {
+const buildChapterContext = (chapter: ChapterDto) => ({
+  title: chapter.title,
+  summary: chapter.summary,
+  position: chapter.position,
+  metadata: chapter.metadata ?? undefined,
+});
+
+class AIService implements AIService {
   constructor(private readonly client: OpenAI) {}
 
   async generateForm(): Promise<IntakeQuestionDto[]> {
@@ -113,7 +51,7 @@ class OpenAIAIService implements AIService {
       messages: [
         {
           role: 'system',
-          content: SYSTEM_PROMPT,
+          content: FORMGEN_SYSTEM_PROMPT,
         },
         {
           role: 'user',
@@ -154,10 +92,41 @@ class OpenAIAIService implements AIService {
 
     return parseChapterOutline(content);
   }
+
+  async generateTasksForChapter(input: TaskGenerationContext): Promise<TaskSchedule> {
+    const storyContextPayload = buildStoryContextPayload(input.story);
+    const chapterContextPayload = buildChapterContext(input.chapter);
+
+    const completion = await this.client.chat.completions.create({
+      model: DEFAULT_MODEL,
+      messages: [
+        {
+          role: 'system',
+          content: TASK_GENERATION_PROMPT,
+        },
+        {
+          role: 'user',
+          content: [
+            `STORY_CONTEXT_JSON_SCHEMA: ${JSON.stringify(STORY_CONTEXT_JSON_SCHEMA, null, 2)}`,
+            `TASK_SCHEDULE_JSON_SCHEMA: ${JSON.stringify(TASK_SCHEDULE_JSON_SCHEMA, null, 2)}`,
+            'STORY_CONTEXT_JSON:',
+            JSON.stringify(storyContextPayload, null, 2),
+            'CHAPTER_CONTEXT_JSON:',
+            JSON.stringify(chapterContextPayload, null, 2),
+          ].join('\n'),
+        },
+      ],
+      response_format: { type: 'json_object' },
+    });
+
+    const content = completion.choices[0]?.message?.content ?? null;
+
+    return parseTaskSchedule(content);
+  }
 }
 
 export const createAIService = ({
   client,
 }: AIServiceDependencies): AIService => {
-  return new OpenAIAIService(client);
+  return new AIService(client);
 };
