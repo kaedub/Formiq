@@ -1,0 +1,14 @@
+{
+  "name": "worker",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/worker/src",
+  "targets": {
+    "run": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "yarn tsx apps/worker/src/client.ts"
+      }
+    }
+  },
+  "tags": []
+}

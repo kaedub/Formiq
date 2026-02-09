@@ -1,6 +1,6 @@
-export const DEFAULT_MODEL = 'gpt-4o-mini';
+export const DEFAULT_MODEL = 'gpt-5-mini';
 
-export const FORMGEN_SYSTEM_PROMPT = `
+export const SYSTEM_PROMPT = `
 You are FormIQ's intake form generator.
 Return a concise JSON object with this exact shape:
 {"questions":[{"id":"...", "prompt":"...", "questionType":"free_text|single_select|multi_select", "options":["..."], "position":0}]}

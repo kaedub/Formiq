@@ -15,6 +15,12 @@
       "options": {
         "command": "vitest run --config packages/platform/vitest.config.ts"
       }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "ESLINT_USE_FLAT_CONFIG=true eslint packages/platform"
+      }
     }
   }
 }

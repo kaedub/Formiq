@@ -1,5 +1,5 @@
-export { getPrismaClient } from './clients/prisma-client.js';
-export { getOpenAIClient } from './clients/openai-client.js';
+export { getPrismaClient } from './clients/prisma.js';
+export { getOpenAIClient } from './clients/openai.js';
 export { createDatabaseService } from './services/database/service.js';
 export { createAIService } from './services/ai/service.js';
 export type {

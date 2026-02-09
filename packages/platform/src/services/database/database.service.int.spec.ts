@@ -7,7 +7,7 @@ import {
   it,
 } from 'vitest';
 import { randomUUID } from 'node:crypto';
-import { PrismaClient, QuestionType } from '@prisma/client';
+import { type PrismaClient, QuestionType } from '@prisma/client';
 import { createDatabaseService } from './service.js';
 import type { DatabaseService } from './types.js';
 import {
@@ -17,7 +17,7 @@ import {
   resetDatabase,
   seedIntakeQuestions,
 } from '../../test/fixtures.js';
-import { getPrismaClient } from '../../clients/prisma-client.js';
+import { getPrismaClient } from '../../clients/prisma.js';
 
 describe('PrismaDatabaseService integration', () => {
   let prisma: PrismaClient;
@@ -46,11 +46,16 @@ describe('PrismaDatabaseService integration', () => {
     expect(result.title).toBe(input.title);
     expect(result.responses).toHaveLength(QUESTION_FIXTURES.length);
     result.responses.forEach((response, index) => {
-      expect(response.question.id).toBe(QUESTION_FIXTURES[index]!.id);
-      if (QUESTION_FIXTURES[index]!.questionType === 'multi_select') {
-        expect(response.answer.values).toEqual([
-          QUESTION_FIXTURES[index]!.options[0],
-        ]);
+      const fixture = QUESTION_FIXTURES[index];
+      if (!fixture) {
+        throw new Error(`Missing question fixture at index ${index}`);
+      }
+
+      expect(response.question.id).toBe(fixture.id);
+      if (fixture.questionType === 'multi_select') {
+        const [firstOption] = fixture.options;
+        expect(firstOption).toBeDefined();
+        expect(response.answer.values).toEqual(firstOption ? [firstOption] : []);
       } else {
         expect(response.answer.values).toEqual([`Answer ${index + 1}`]);
       }
@@ -65,9 +70,12 @@ describe('PrismaDatabaseService integration', () => {
   it('fails to create a story when question id is invalid', async () => {
     const user = await createTestUser(prisma);
     const input = buildStoryInput(user.id);
-    input.responses[0]!.questionId = 'missing';
+    const responses = input.responses.map((response, index) =>
+      index === 0 ? { ...response, questionId: 'missing' } : response,
+    );
+    const invalidInput = { ...input, responses };
 
-    await expect(service.createStory(input)).rejects.toThrow();
+    await expect(service.createStory(invalidInput)).rejects.toThrow();
   });
 
   it('fetches a story by id for the owning user', async () => {
@@ -161,12 +169,8 @@ describe('PrismaDatabaseService integration', () => {
 
     expect(stories).toHaveLength(2);
     stories.forEach((story) => {
-      expect(story).toEqual(
-        expect.objectContaining({
-          id: expect.any(String),
-          title: expect.any(String),
-        }),
-      );
+      expect(typeof story.id).toBe('string');
+      expect(typeof story.title).toBe('string');
     });
   });
 

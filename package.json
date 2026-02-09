@@ -22,7 +22,8 @@
     "db:push": "yarn prisma db push",
     "db:seed": "yarn prisma db seed",
     "db:wipe": "yarn prisma db wipe --force",
-    "db:migrate": "yarn prisma migrate dev --name"
+    "db:migrate": "yarn prisma migrate dev --name",
+    "worker:run": "nx run worker:run"
   },
   "devDependencies": {
     "@nx/eslint": "22.3.3",

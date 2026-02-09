@@ -137,13 +137,13 @@ export const mapPromptExecutionDto = (
   if (exec.templateId) {
     dto.templateId = exec.templateId;
   }
-  if (exec.output !== null && exec.output !== undefined) {
+  if (exec.output !== null) {
     dto.output = exec.output;
   }
   if (exec.model) {
     dto.model = exec.model;
   }
-  if (exec.metadata !== null && exec.metadata !== undefined) {
+  if (exec.metadata != null) {
     dto.metadata = exec.metadata;
   }
 

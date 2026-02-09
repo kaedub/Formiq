@@ -1,4 +1,4 @@
-import { getPrismaClient } from '../src/clients/prisma-client.js';
+import { getPrismaClient } from '../src/clients/prisma.js';
 import type { QuestionType } from '@formiq/shared';
 
 type IntakeQuestionSeed = {
@@ -97,7 +97,7 @@ const main = async (): Promise<void> => {
 };
 
 void main()
-  .catch((error) => {
+  .catch((error: unknown) => {
     console.error('Seeding intake form failed', error);
     process.exitCode = 1;
   })

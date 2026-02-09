@@ -11,10 +11,16 @@
       "path": "./apps/api"
     },
     {
+      "path": "./apps/worker"
+    },
+    {
       "path": "./packages/temporal/workflows"
     },
     {
       "path": "./packages/temporal/activities"
+    },
+    {
+      "path": "./apps/worker"
     }
   ],
   "compilerOptions": {

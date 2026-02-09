@@ -1,300 +1,149 @@
-import type { IntakeQuestionDto, QuestionType } from '@formiq/shared';
+import type { IntakeQuestionDto } from '@formiq/shared';
+import { z } from 'zod';
 import type {
   ChapterOutline,
   ChapterOutlineItem,
-  ChapterOutlineMilestone,
   GeneratedTask,
   TaskSchedule,
 } from './types.js';
 
-const FORM_QUESTION_TYPES: readonly QuestionType[] = [
-  'free_text',
-  'single_select',
-  'multi_select',
-];
+const questionTypeSchema = z.enum(['free_text', 'single_select', 'multi_select']);
 
-const isRecord = (
-  value: unknown,
-): value is Record<string, unknown> => {
-  return typeof value === 'object' && value !== null;
+const intakeQuestionSchema = z.object({
+  id: z.string().min(1),
+  prompt: z.string().min(1),
+  questionType: questionTypeSchema,
+  options: z.array(z.string()),
+  position: z.number().int().nonnegative(),
+});
+
+const intakeFormSchema = z.object({
+  questions: z.array(intakeQuestionSchema),
+});
+
+const chapterMilestoneSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().min(1),
+  successCriteria: z.array(z.string()).default([]),
+  estimatedDurationDays: z.number().nonnegative().optional(),
+});
+
+const chapterSchema = z.object({
+  title: z.string().min(1),
+  summary: z.string().min(1),
+  position: z.number().int().nonnegative(),
+  milestones: z.array(chapterMilestoneSchema),
+});
+
+const chapterOutlineSchema = z.object({
+  chapters: z.array(chapterSchema),
+});
+
+const taskSchema = z.object({
+  day: z.number().int().positive(),
+  title: z.string().min(1),
+  objective: z.string().min(1),
+  description: z.string().min(1),
+  body: z.string().min(1),
+  estimatedMinutes: z.number().positive(),
+  optionalChallenge: z.string().min(1).optional(),
+  reflectionPrompt: z.string().min(1).optional(),
+});
+
+const taskScheduleSchema = z.object({
+  tasks: z.array(taskSchema),
+});
+
+const formatIssues = (issues: z.ZodIssue[]): string => {
+  return issues
+    .map((issue) => {
+      const path = issue.path.join('.') || '<root>';
+      return `${path}: ${issue.message}`;
+    })
+    .join('; ');
 };
 
-const isNonEmptyString = (value: unknown): value is string => {
-  return typeof value === 'string' && value.trim().length > 0;
-};
-
-const isQuestionType = (value: unknown): value is QuestionType => {
-  return FORM_QUESTION_TYPES.includes(value as QuestionType);
-};
-
-const isStringArray = (value: unknown): value is string[] => {
-  return Array.isArray(value) && value.every((entry) => typeof entry === 'string');
-};
-
-const isFiniteNumber = (value: unknown): value is number => {
-  return typeof value === 'number' && Number.isFinite(value);
-};
-
-const isPositiveInteger = (value: unknown): value is number => {
-  return Number.isInteger(value) && value > 0;
-};
-
-const normalizeFormQuestion = (
-  question: unknown,
-  index: number,
-): IntakeQuestionDto => {
-  if (!isRecord(question)) {
-    throw new Error(`Form question at index ${index} is not an object`);
+const parseJsonContent = (content: string | null, context: string): unknown => {
+  if (!content) {
+    throw new Error(`OpenAI returned an empty ${context} response`);
   }
 
-  const { id, prompt, questionType, options, position } = question;
+  try {
+    return JSON.parse(content);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown parse error';
+    throw new Error(`Unable to parse OpenAI ${context} JSON: ${message}`);
+  }
+};
 
-  if (!isNonEmptyString(id)) {
-    throw new Error(`Form question at index ${index} is missing an id`);
+const parseWithSchema = <T>(
+  schema: z.ZodType<T>,
+  content: string | null,
+  context: string,
+): T => {
+  const parsed = parseJsonContent(content, context);
+  const validationResult = schema.safeParse(parsed);
+
+  if (!validationResult.success) {
+    throw new Error(`${context} payload failed validation: ${formatIssues(validationResult.error.issues)}`);
   }
 
-  if (!isNonEmptyString(prompt)) {
-    throw new Error(`Form question at index ${index} is missing a prompt`);
-  }
-
-  if (!isQuestionType(questionType)) {
-    throw new Error(`Form question at index ${index} has an invalid questionType`);
-  }
-
-  if (!isStringArray(options)) {
-    throw new Error(`Form question at index ${index} has invalid options`);
-  }
-
-  const normalizedPosition = Number.isFinite(position)
-    ? Number(position)
-    : index;
-
-  return {
-    id,
-    prompt,
-    questionType,
-    options: questionType === 'free_text' ? [] : options,
-    position: normalizedPosition,
-  };
+  return validationResult.data;
 };
 
 export const parseFormDefinition = (
   content: string | null,
 ): IntakeQuestionDto[] => {
-  if (!content) {
-    throw new Error('OpenAI returned an empty form response');
-  }
+  const parsed = parseWithSchema(intakeFormSchema, content, 'form');
 
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(content);
-  } catch (error) {
-    throw new Error('Unable to parse OpenAI form JSON');
-  }
-
-  if (!isRecord(parsed)) {
-    throw new Error('Form payload must be an object');
-  }
-
-  const questions = parsed['questions'];
-
-  if (!Array.isArray(questions)) {
-    throw new Error('Form payload is missing questions array');
-  }
-
-  return questions.map((question, index) => normalizeFormQuestion(question, index));
-};
-
-const normalizeMilestone = (
-  milestone: unknown,
-  chapterIndex: number,
-  milestoneIndex: number,
-): ChapterOutlineMilestone => {
-  if (!isRecord(milestone)) {
-    throw new Error(`Milestone at index ${milestoneIndex} for chapter ${chapterIndex} is not an object`);
-  }
-
-  const { title, description, successCriteria, estimatedDurationDays } = milestone;
-
-  if (!isNonEmptyString(title)) {
-    throw new Error(`Milestone at index ${milestoneIndex} for chapter ${chapterIndex} is missing a title`);
-  }
-
-  if (!isNonEmptyString(description)) {
-    throw new Error(`Milestone at index ${milestoneIndex} for chapter ${chapterIndex} is missing a description`);
-  }
-
-  if (estimatedDurationDays !== undefined && !isFiniteNumber(estimatedDurationDays)) {
-    throw new Error(`Milestone at index ${milestoneIndex} for chapter ${chapterIndex} has invalid estimatedDurationDays`);
-  }
-
-  const normalizedSuccessCriteria = successCriteria && isStringArray(successCriteria)
-    ? successCriteria
-    : [];
-
-  return {
-    title,
-    description,
-    successCriteria: normalizedSuccessCriteria,
-    ...(estimatedDurationDays !== undefined ? { estimatedDurationDays } : {}),
-  };
-};
-
-const normalizeChapter = (
-  chapter: unknown,
-  index: number,
-): ChapterOutlineItem => {
-  if (!isRecord(chapter)) {
-    throw new Error(`Chapter at index ${index} is not an object`);
-  }
-
-  const { title, summary, position, milestones } = chapter;
-
-  if (!isNonEmptyString(title)) {
-    throw new Error(`Chapter at index ${index} is missing a title`);
-  }
-
-  if (!isNonEmptyString(summary)) {
-    throw new Error(`Chapter at index ${index} is missing a summary`);
-  }
-
-  const normalizedPosition = Number.isFinite(position)
-    ? Number(position)
-    : index;
-
-  if (!Array.isArray(milestones)) {
-    throw new Error(`Chapter at index ${index} has invalid milestones`);
-  }
-
-  const normalizedMilestones = milestones.map((item, milestoneIndex) =>
-    normalizeMilestone(item, index, milestoneIndex),
-  );
-
-  return {
-    title,
-    summary,
-    position: normalizedPosition,
-    milestones: normalizedMilestones,
-  };
+  return parsed.questions.map((question) => ({
+    id: question.id,
+    prompt: question.prompt,
+    questionType: question.questionType,
+    options: question.options,
+    position: question.position,
+  }));
 };
 
 export const parseChapterOutline = (
   content: string | null,
 ): ChapterOutline => {
-  if (!content) {
-    throw new Error('OpenAI returned an empty chapter outline response');
-  }
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(content);
-  } catch (error) {
-    throw new Error('Unable to parse OpenAI chapter outline JSON');
-  }
-
-  if (!isRecord(parsed)) {
-    throw new Error('Chapter outline payload must be an object');
-  }
-
-  const chapters = parsed['chapters'];
-
-  if (!Array.isArray(chapters)) {
-    throw new Error('Chapter outline payload is missing chapters array');
-  }
+  const parsed = parseWithSchema(chapterOutlineSchema, content, 'chapter outline');
 
   return {
-    chapters: chapters.map((chapter, index) => normalizeChapter(chapter, index)),
-  };
-};
-
-const normalizeGeneratedTask = (
-  task: unknown,
-  index: number,
-): GeneratedTask => {
-  if (!isRecord(task)) {
-    throw new Error(`Task at index ${index} is not an object`);
-  }
-
-  const {
-    day,
-    title,
-    objective,
-    description,
-    body,
-    estimatedMinutes,
-    optionalChallenge,
-    reflectionPrompt,
-  } = task;
-
-  if (!isPositiveInteger(day)) {
-    throw new Error(`Task at index ${index} has invalid day`);
-  }
-
-  if (!isNonEmptyString(title)) {
-    throw new Error(`Task at index ${index} is missing a title`);
-  }
-
-  if (!isNonEmptyString(objective)) {
-    throw new Error(`Task at index ${index} is missing an objective`);
-  }
-
-  if (!isNonEmptyString(description)) {
-    throw new Error(`Task at index ${index} is missing a description`);
-  }
-
-  if (!isNonEmptyString(body)) {
-    throw new Error(`Task at index ${index} is missing a body`);
-  }
-
-  if (!isFiniteNumber(estimatedMinutes) || estimatedMinutes <= 0) {
-    throw new Error(`Task at index ${index} has invalid estimatedMinutes`);
-  }
-
-  if (optionalChallenge !== undefined && optionalChallenge !== null && !isNonEmptyString(optionalChallenge)) {
-    throw new Error(`Task at index ${index} has invalid optionalChallenge`);
-  }
-
-  if (reflectionPrompt !== undefined && reflectionPrompt !== null && !isNonEmptyString(reflectionPrompt)) {
-    throw new Error(`Task at index ${index} has invalid reflectionPrompt`);
-  }
-
-  return {
-    day,
-    title,
-    objective,
-    description,
-    body,
-    estimatedMinutes,
-    ...(optionalChallenge ? { optionalChallenge } : {}),
-    ...(reflectionPrompt ? { reflectionPrompt } : {}),
+    chapters: parsed.chapters.map((chapter): ChapterOutlineItem => ({
+      title: chapter.title,
+      summary: chapter.summary,
+      position: chapter.position,
+      milestones: chapter.milestones.map((milestone) => ({
+        title: milestone.title,
+        description: milestone.description,
+        successCriteria: milestone.successCriteria ?? [],
+        ...(milestone.estimatedDurationDays !== undefined
+          ? { estimatedDurationDays: milestone.estimatedDurationDays }
+          : {}),
+      })),
+    })),
   };
 };
 
 export const parseTaskSchedule = (
   content: string | null,
 ): TaskSchedule => {
-  if (!content) {
-    throw new Error('OpenAI returned an empty task schedule response');
-  }
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(content);
-  } catch (error) {
-    throw new Error('Unable to parse OpenAI task schedule JSON');
-  }
-
-  if (!isRecord(parsed)) {
-    throw new Error('Task schedule payload must be an object');
-  }
-
-  const tasks = parsed['tasks'];
-
-  if (!Array.isArray(tasks)) {
-    throw new Error('Task schedule payload is missing tasks array');
-  }
+  const parsed = parseWithSchema(taskScheduleSchema, content, 'task schedule');
 
   return {
-    tasks: tasks.map((task, index) => normalizeGeneratedTask(task, index)),
+    tasks: parsed.tasks.map(
+      (task): GeneratedTask => ({
+        day: task.day,
+        title: task.title,
+        objective: task.objective,
+        description: task.description,
+        body: task.body,
+        estimatedMinutes: task.estimatedMinutes,
+        ...(task.optionalChallenge ? { optionalChallenge: task.optionalChallenge } : {}),
+        ...(task.reflectionPrompt ? { reflectionPrompt: task.reflectionPrompt } : {}),
+      }),
+    ),
   };
 };

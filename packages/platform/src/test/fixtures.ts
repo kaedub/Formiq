@@ -92,7 +92,7 @@ export const buildStoryInput = (userId: string): CreateStoryInput => ({
     questionId: question.id,
     values:
       question.questionType === 'multi_select'
-        ? [question.options[0]!]
+        ? question.options.slice(0, 1)
         : [`Answer ${index + 1}`],
   })),
 });
