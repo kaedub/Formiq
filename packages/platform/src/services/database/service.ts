@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@prisma/client';
+import { MilestoneStatus, type PrismaClient } from '@prisma/client';
 import type { DatabaseService, DatabaseServiceDependencies } from './types.js';
 import type {
   CreateProjectInput,
@@ -24,38 +24,6 @@ import {
 
 class PrismaDatabaseService implements DatabaseService {
   constructor(private readonly db: PrismaClient) {}
-
-  async createProject(input: CreateProjectInput): Promise<ProjectDto> {
-    const project = (await this.db.project.create({
-      data: {
-        userId: input.userId,
-        title: input.title,
-        questionAnswers: {
-          create: input.responses.map((response) => ({
-            userId: input.userId,
-            question: {
-              connect: { id: response.questionId },
-            },
-            values: response.values,
-          })),
-        },
-      },
-      include: {
-        questionAnswers: {
-          include: {
-            question: true,
-          },
-          orderBy: {
-            question: {
-              position: 'asc',
-            },
-          },
-        },
-      },
-    })) as ProjectWithResponses;
-
-    return mapProjectDto(project);
-  }
 
   async getProjectById(
     projectId: string,
@@ -149,6 +117,21 @@ class PrismaDatabaseService implements DatabaseService {
     }));
   }
 
+  async getIntakeFormByName(name: string): Promise<IntakeFormDto | null> {
+    const form = (await this.db.intakeForm.findUnique({
+      where: { name },
+      include: {
+        questions: {
+          orderBy: {
+            position: 'asc',
+          },
+        },
+      },
+    })) as IntakeFormWithQuestions | null;
+
+    return form ? mapIntakeFormDto(form) : null;
+  }
+
   async createIntakeForm(
     intakeForm: IntakeFormQuestions,
   ): Promise<IntakeFormDto> {
@@ -177,19 +160,82 @@ class PrismaDatabaseService implements DatabaseService {
     return mapIntakeFormDto(created);
   }
 
-  async getIntakeFormByName(name: string): Promise<IntakeFormDto | null> {
-    const form = (await this.db.intakeForm.findUnique({
-      where: { name },
+  async createProject(input: CreateProjectInput): Promise<ProjectDto> {
+    const project = (await this.db.project.create({
+      data: {
+        userId: input.userId,
+        title: input.title,
+        questionAnswers: {
+          create: input.responses.map((response) => ({
+            userId: input.userId,
+            question: {
+              connect: { id: response.questionId },
+            },
+            values: response.values,
+          })),
+        },
+      },
       include: {
-        questions: {
+        questionAnswers: {
+          include: {
+            question: true,
+          },
           orderBy: {
-            position: 'asc',
+            question: {
+              position: 'asc',
+            },
           },
         },
       },
-    })) as IntakeFormWithQuestions | null;
+    })) as ProjectWithResponses;
 
-    return form ? mapIntakeFormDto(form) : null;
+    return mapProjectDto(project);
+  }
+
+  async createProjectMilestones(
+    projectId: string,
+    userId: string,
+    milestones: ProjectContextDto['milestones'],
+  ): Promise<void> {
+    const project = await this.db.project.findFirst({
+      where: {
+        id: projectId,
+        userId,
+      },
+      select: {
+        id: true,
+        milestones: {
+          select: {
+            id: true,
+            tasks: {
+              select: {
+                id: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!project) {
+      throw new Error(`Project ${projectId} not found for user ${userId}`);
+    }
+
+    if (project.milestones.length > 0) {
+      throw new Error(`Project ${projectId} already has milestones`);
+    }
+
+    await this.db.milestone.createMany({
+      data: milestones.map((milestone) => ({
+        projectId,
+        title: milestone.title,
+        summary: milestone.summary,
+        position: milestone.position,
+        status: MilestoneStatus.locked,
+        // context: milestone.context,
+        // metadata: milestone.metadata,
+      })),
+    });
   }
 }
 

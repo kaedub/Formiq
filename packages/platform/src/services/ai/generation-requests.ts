@@ -65,10 +65,6 @@ abstract class BaseGenerationRequest<
       ],
       text: { format: zodTextFormat(this.outputSchema, this.name) },
     });
-    // console.log(
-    //   `Received response for ${this.name} generation request:`,
-    //   response,
-    // );
     return response.output_parsed as z.infer<OutputSchema>;
   }
 }

@@ -14,7 +14,7 @@ const prisma = getPrismaClient();
 const intakeFormName = 'goal_intake_v1';
 const testUser = {
   id: 'test-user-id',
-  email: 'test@test',
+  email: 'test-user@example.com',
   password: 'test',
 };
 

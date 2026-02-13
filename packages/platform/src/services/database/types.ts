@@ -3,6 +3,7 @@ import type {
   CreateProjectInput,
   IntakeFormDto,
   IntakeFormQuestions,
+  MilestoneDto,
   ProjectContextDto,
   ProjectDto,
   ProjectSummaryDto,
@@ -13,13 +14,18 @@ export type DatabaseServiceDependencies = {
 };
 
 export interface DatabaseService {
-  createProject(input: CreateProjectInput): Promise<ProjectDto>;
   getProjectById(projectId: string, userId: string): Promise<ProjectDto | null>;
   getProjectContext(
     projectId: string,
     userId: string,
   ): Promise<ProjectContextDto>;
   getProjectsByUserId(userId: string): Promise<ProjectSummaryDto[]>;
-  createIntakeForm(intakeForm: IntakeFormQuestions): Promise<IntakeFormDto>;
   getIntakeFormByName(name: string): Promise<IntakeFormDto | null>;
+  createIntakeForm(intakeForm: IntakeFormQuestions): Promise<IntakeFormDto>;
+  createProject(input: CreateProjectInput): Promise<ProjectDto>;
+  createProjectMilestones(
+    projectId: string,
+    userId: string,
+    milestones: MilestoneDto[],
+  ): Promise<void>;
 }

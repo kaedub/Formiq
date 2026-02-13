@@ -116,7 +116,7 @@ model Milestone {
   context          Json?
   position         Int
   status           MilestoneStatus   @default(locked)
-  generatedAt      DateTime?
+  generatedAt      DateTime?         @default(now())
   metadata         Json?
   projectId        String
   project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)

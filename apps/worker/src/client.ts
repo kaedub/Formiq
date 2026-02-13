@@ -4,8 +4,8 @@ import {
   getOpenAIClient,
   getPrismaClient,
 } from '@formiq/platform';
-import type { CreateProjectInput } from '@formiq/shared';
-import type { PrismaClient } from '@prisma/client';
+import type { CreateProjectInput, MilestoneDto } from '@formiq/shared';
+import { MilestoneStatus, type PrismaClient } from '@prisma/client';
 
 const USER_ID = 'test-user-id';
 
@@ -28,7 +28,7 @@ const run = async (): Promise<void> => {
   const aiService = createAIService({ client: getOpenAIClient() });
 
   await ensureTestUser(prisma);
-  // const intakeForm = await databaseService.getIntakeFormByName('goal_intake_v1');
+  const intakeForm = await databaseService.getIntakeFormByName('goal_intake_v1');
 
   const projectInput: CreateProjectInput = {
     userId: USER_ID,
@@ -70,6 +70,7 @@ const run = async (): Promise<void> => {
   );
 
   console.log('\nCreating project with responses...');
+
   const project = await databaseService.createProject(projectInput);
   console.log('Created project:', {
     id: project.id,
@@ -85,6 +86,17 @@ const run = async (): Promise<void> => {
     console.log(`- ${index + 1}. ${milestone.title}`);
     console.log(`   Description: ${milestone.description}`);
   });
+
+  const milestones: MilestoneDto[] = outline.milestones.map((milestone, index) => ({
+    id: `${project.id}-milestone-${index + 1}`,
+    projectId: project.id,
+    title: milestone.title,
+    summary: milestone.description,
+    position: index,
+    status: MilestoneStatus.locked,
+  }));
+
+  await databaseService.createProjectMilestones(project.id, USER_ID, milestones);
 
   console.log('\nGenerating coarse task schedule via AI service...');
   const coarseTaskSchedule = await aiService.generateCoarseTaskSchedule({

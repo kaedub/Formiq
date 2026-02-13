@@ -53,9 +53,9 @@ export interface MilestoneDto {
   projectId: string;
   title: string;
   summary: string;
-  context?: unknown;
   position: number;
   status: MilestoneStatus;
+  context?: unknown;
   generatedAt?: string;
   metadata?: unknown;
 }
