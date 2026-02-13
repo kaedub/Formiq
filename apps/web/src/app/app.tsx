@@ -26,7 +26,7 @@ function HomePage(): JSX.Element {
       if (!res.ok) {
         throw new Error(`Failed to load projects: ${res.status}`);
       }
-      const data = await res.json() as { projects: ProjectSummaryDto[] };
+      const data = (await res.json()) as { projects: ProjectSummaryDto[] };
       setProjects(data.projects);
     } catch (err) {
       console.warn('Could not load projects', err);
@@ -108,7 +108,9 @@ function IntakePage(): JSX.Element {
       try {
         const res = await fetch(`${API_BASE}/intake-forms/${INTAKE_FORM_NAME}`);
         if (!res.ok) throw new Error('Failed to load questions');
-        const data = await res.json() as { form: { questions: IntakeQuestionDto[] } };
+        const data = (await res.json()) as {
+          form: { questions: IntakeQuestionDto[] };
+        };
         setQuestions(data.form.questions);
       } catch (error) {
         console.warn('Falling back to static questions', error);
@@ -242,7 +244,7 @@ function IntakePage(): JSX.Element {
                   </div>
                 ) : (
                   <textarea
-                    value={(answers[question.id] as string)}
+                    value={answers[question.id] as string}
                     onChange={(event) =>
                       updateAnswer(question.id, event.target.value)
                     }

@@ -28,7 +28,8 @@ const run = async (): Promise<void> => {
   const aiService = createAIService({ client: getOpenAIClient() });
 
   await ensureTestUser(prisma);
-  const intakeForm = await databaseService.getIntakeFormByName('goal_intake_v1');
+  const intakeForm =
+    await databaseService.getIntakeFormByName('goal_intake_v1');
 
   const projectInput: CreateProjectInput = {
     userId: USER_ID,
@@ -79,37 +80,40 @@ const run = async (): Promise<void> => {
   });
 
   console.log('\nGenerating project outline via AI service...');
-  const outline = await aiService.generateProjectOutline(project);
+  const outline = await aiService.generateProjectOutline({ project });
 
   console.log('\nGenerated milestones:');
-  outline.milestones.forEach((milestone, index) => {
-    console.log(`- ${index + 1}. ${milestone.title}`);
-    console.log(`   Description: ${milestone.description}`);
+  outline.milestones.forEach((milestone) => {
+    console.log(milestone);
   });
 
-  const milestones: MilestoneDto[] = outline.milestones.map((milestone, index) => ({
-    id: `${project.id}-milestone-${index + 1}`,
-    projectId: project.id,
-    title: milestone.title,
-    summary: milestone.description,
-    position: index,
-    status: MilestoneStatus.locked,
-  }));
+  const milestones: MilestoneDto[] = outline.milestones.map(
+    (milestone, index) => ({
+      id: `${project.id}-milestone-${index + 1}`,
+      projectId: project.id,
+      title: milestone.title,
+      summary: milestone.description,
+      position: index,
+      status: MilestoneStatus.locked,
+    }),
+  );
 
-  await databaseService.createProjectMilestones(project.id, USER_ID, milestones);
+  await databaseService.createProjectMilestones(
+    project.id,
+    USER_ID,
+    milestones,
+  );
 
-  console.log('\nGenerating coarse task schedule via AI service...');
-  const coarseTaskSchedule = await aiService.generateCoarseTaskSchedule({
+  const milestone = milestones[0]!;
+  const { tasks } = await aiService.generateTasksForMilestone({
     project,
-    outline,
+    milestone,
   });
 
-  console.log('\nGenerated coarse task schedule:');
-  coarseTaskSchedule.tasks.forEach((task) => {
-    console.log(
-      `- Day ${task.day}: ${task.title} (${task.estimatedMinutes} minutes)`,
-    );
-  });
+  console.log('\nGenerated tasks for ', milestone.title, '...');
+  for (const task of tasks) {
+    console.log(task);
+  }
 };
 
 run().catch((error: unknown) => {
