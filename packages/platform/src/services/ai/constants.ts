@@ -21,16 +21,6 @@ You are FormIQ's roadmap planner. Generate a concise milestone plan for the prov
 - Respond with JSON only, no additional text.
 `.trim();
 
-export const COARSE_TASK_SCHEDULE_PROMPT = `
-You are FormIQ's coarse task scheduler. Generate a global, coarse-grained task_schedule across all milestones for the provided project context and project outline.
-- Always conform to the TASK_SCHEDULE_JSON_SCHEMA.
-- Use the PROJECT_CONTEXT_JSON_SCHEMA and PROJECT_PLAN_JSON_SCHEMA as the contracts for how project and outline data are provided.
-- Work at a coarse level: cluster work into tasks or epics that cover multiple days or day ranges rather than detailed daily steps.
-- Ensure coverage across all milestones, respecting their order, dependencies, durations, and constraints so the overall plan is realistic and achievable within the user's cadence.
-- Respect user constraints inferred from questions and answers (time available, preferences, constraints). Keep estimatedMinutes realistic at the level of coarse blocks of work.
-- Respond with JSON only, no additional text.
-`.trim();
-
 export const TASK_GENERATION_PROMPT = `
 You are FormIQ's task planner. Generate a sequential daily task schedule for the given milestone using the provided project context.
 - Always conform to the TASK_SCHEDULE_JSON_SCHEMA.

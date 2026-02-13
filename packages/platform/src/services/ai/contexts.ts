@@ -1,7 +1,8 @@
-import type { ProjectDto } from '@formiq/shared';
+import type { MilestoneDto, ProjectDto } from '@formiq/shared';
 import { z } from 'zod';
 import {
-  coarseTaskScheduleContextSchema,
+  milestoneContextSchema,
+  milestoneTaskContextSchema,
   projectContextSchema,
   projectPlanSchema,
 } from './schemas.js';
@@ -14,8 +15,10 @@ export type ProjectContextJson = z.infer<typeof projectContextSchema>;
 
 export type ProjectOutlineJson = z.infer<typeof projectPlanSchema>;
 
-export type CoarseTaskScheduleContextJson = z.infer<
-  typeof coarseTaskScheduleContextSchema
+export type MilestoneContextJson = z.infer<typeof milestoneContextSchema>;
+
+export type MilestoneTaskContextJson = z.infer<
+  typeof milestoneTaskContextSchema
 >;
 
 export class ProjectContext implements PromptContext<ProjectContextJson> {
@@ -42,16 +45,27 @@ export class ProjectContext implements PromptContext<ProjectContextJson> {
   }
 }
 
-export class CoarseTaskScheduleContext implements PromptContext<CoarseTaskScheduleContextJson> {
+export class MilestoneContext implements PromptContext<MilestoneContextJson> {
+  constructor(private readonly milestone: MilestoneDto) {}
+
+  toJSON(): MilestoneContextJson {
+    return {
+      title: this.milestone.title,
+      summary: this.milestone.summary,
+    };
+  }
+}
+
+export class MilestoneTaskContext implements PromptContext<MilestoneTaskContextJson> {
   constructor(
     private readonly projectContext: ProjectContext,
-    private readonly projectOutline: ProjectOutlineJson,
+    private readonly milestoneContext: MilestoneContext,
   ) {}
 
-  toJSON(): CoarseTaskScheduleContextJson {
+  toJSON(): MilestoneTaskContextJson {
     return {
       projectContext: this.projectContext.toJSON(),
-      projectOutline: this.projectOutline,
+      milestone: this.milestoneContext.toJSON(),
     };
   }
 }

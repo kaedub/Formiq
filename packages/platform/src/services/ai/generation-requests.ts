@@ -1,24 +1,30 @@
 import type {
-  CoarseTaskScheduleContextJson,
+  MilestoneTaskContextJson,
   ProjectContextJson,
 } from './contexts.js';
-import { CoarseTaskScheduleContext, ProjectContext } from './contexts.js';
+import {
+  MilestoneContext,
+  MilestoneTaskContext,
+  ProjectContext,
+} from './contexts.js';
 import {
   DEFAULT_MODEL,
-  COARSE_TASK_SCHEDULE_PROMPT,
   PROJECT_PLAN_PROMPT,
   INTAKE_FORM_PROMPT,
+  TASK_GENERATION_PROMPT,
 } from './constants.js';
 import {
   intakeFormSchema,
   projectContextSchema,
   projectPlanSchema,
-  coarseTaskScheduleContextSchema,
-  taskScheduleSchema,
+  milestoneTaskContextSchema,
+  milestoneTasksSchema,
 } from './schemas.js';
+import type { TaskGenerationContext } from './types.js';
 import type z from 'zod';
 import type OpenAI from 'openai';
 import { zodTextFormat } from 'openai/helpers/zod.js';
+import type { MilestoneDto, ProjectDto } from '@formiq/shared';
 
 interface GenerationRequest<
   Context,
@@ -100,9 +106,9 @@ export class ProjectOutlineGenerationRequest extends BaseGenerationRequest<
   outputSchema = projectPlanSchema;
   context: ProjectContext;
 
-  constructor(client: OpenAI, projectContext: ProjectContext) {
+  constructor(client: OpenAI, project: ProjectDto) {
     super(client);
-    this.context = projectContext;
+    this.context = new ProjectContext(project);
   }
 
   toJSON(): ProjectContextJson {
@@ -120,35 +126,34 @@ export class ProjectOutlineGenerationRequest extends BaseGenerationRequest<
   }
 }
 
-export class CoarseTaskScheduleGenerationRequest extends BaseGenerationRequest<
-  CoarseTaskScheduleContext,
-  typeof coarseTaskScheduleContextSchema,
-  typeof taskScheduleSchema
+export class TaskGenerationRequest extends BaseGenerationRequest<
+  MilestoneTaskContext,
+  typeof milestoneTaskContextSchema,
+  typeof milestoneTasksSchema
 > {
-  name = 'coarse_task_schedule';
+  name = 'task_schedule';
   model = DEFAULT_MODEL;
-  systemPrompt = COARSE_TASK_SCHEDULE_PROMPT;
-  description = 'FormIQ coarse task schedule payload';
-  inputSchema = coarseTaskScheduleContextSchema;
-  outputSchema = taskScheduleSchema;
-  context: CoarseTaskScheduleContext;
+  systemPrompt = TASK_GENERATION_PROMPT;
+  description = 'FormIQ milestone task schedule payload';
+  inputSchema = milestoneTaskContextSchema;
+  outputSchema = milestoneTasksSchema;
+  context: MilestoneTaskContext;
 
-  constructor(client: OpenAI, context: CoarseTaskScheduleContext) {
+  constructor(client: OpenAI, project: ProjectDto, milestone: MilestoneDto) {
     super(client);
-    this.context = context;
-  }
-
-  toJSON(): CoarseTaskScheduleContextJson {
-    return this.context.toJSON();
+    const projectContext = new ProjectContext(project);
+    const milestoneContext = new MilestoneContext(milestone);
+    this.context = new MilestoneTaskContext(projectContext, milestoneContext);
   }
 
   buildUserPrompt(): string {
-    const coarseContextPayload = this.toJSON();
+    const milestoneTaskContextPayload = this.context.toJSON();
+
     return [
-      `COARSE_TASK_SCHEDULE_CONTEXT_JSON_SCHEMA: ${JSON.stringify(this.inputSchema, null, 2)}`,
+      `MILESTONE_TASK_CONTEXT_JSON_SCHEMA: ${JSON.stringify(this.inputSchema, null, 2)}`,
       `TASK_SCHEDULE_JSON_SCHEMA: ${JSON.stringify(this.outputSchema, null, 2)}`,
-      'COARSE_TASK_SCHEDULE_CONTEXT_JSON:',
-      JSON.stringify(coarseContextPayload, null, 2),
+      'MILESTONE_TASK_CONTEXT_JSON:',
+      JSON.stringify(milestoneTaskContextPayload, null, 2),
     ].join('\n');
   }
 }

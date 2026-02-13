@@ -1,18 +1,17 @@
 import type OpenAI from 'openai';
-import type { ProjectDto } from '@formiq/shared';
 import {
-  CoarseTaskScheduleGenerationRequest,
   IntakeFormDefinitionRequest,
   ProjectOutlineGenerationRequest,
+  TaskGenerationRequest,
 } from './generation-requests.js';
-import { CoarseTaskScheduleContext, ProjectContext } from './contexts.js';
 import type {
   AIService,
   AIServiceDependencies,
-  CoarseTaskScheduleGenerationContext,
   IntakeFormDefintion,
   ProjectOutline,
-  TaskSchedule,
+  MilestoneTasks,
+  GenerateTasksForMilestoneArgs,
+  GenerateProjectOutlineArgs,
 } from './types.js';
 
 class OpenAIService implements AIService {
@@ -24,31 +23,20 @@ class OpenAIService implements AIService {
     return response;
   }
 
-  async generateProjectOutline(project: ProjectDto): Promise<ProjectOutline> {
-    const projectContext = new ProjectContext(project);
-    const request = new ProjectOutlineGenerationRequest(
-      this.client,
-      projectContext,
-    );
+  async generateProjectOutline({
+    project,
+  }: GenerateProjectOutlineArgs): Promise<ProjectOutline> {
+    const request = new ProjectOutlineGenerationRequest(this.client, project);
     const projectOutline = await request.execute();
-    // TODO: validate response
     return projectOutline;
   }
 
-  async generateCoarseTaskSchedule(
-    input: CoarseTaskScheduleGenerationContext,
-  ): Promise<TaskSchedule> {
-    const projectContext = new ProjectContext(input.project);
-    const coarseContext = new CoarseTaskScheduleContext(
-      projectContext,
-      input.outline,
-    );
-    const request = new CoarseTaskScheduleGenerationRequest(
-      this.client,
-      coarseContext,
-    );
+  async generateTasksForMilestone({
+    project,
+    milestone,
+  }: GenerateTasksForMilestoneArgs): Promise<MilestoneTasks> {
+    const request = new TaskGenerationRequest(this.client, project, milestone);
     const taskSchedule = await request.execute();
-    // TODO: validate response
     return taskSchedule;
   }
 }

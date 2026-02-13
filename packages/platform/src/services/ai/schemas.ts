@@ -40,7 +40,7 @@ export const projectContextSchema = z
   })
   .strict();
 
-export const projectPlanMilestoneSchema = z
+export const projectMilestoneSchema = z
   .object({
     title: z.string().min(1),
     description: z.string().min(1),
@@ -49,7 +49,7 @@ export const projectPlanMilestoneSchema = z
 
 export const projectPlanSchema = z
   .object({
-    milestones: z.array(projectPlanMilestoneSchema),
+    milestones: z.array(projectMilestoneSchema),
   })
   .strict();
 
@@ -63,16 +63,23 @@ export const taskSchema = z
   })
   .strict();
 
-export const taskScheduleSchema = z
+export const milestoneTasksSchema = z
   .object({
     tasks: z.array(taskSchema),
   })
   .strict();
 
-export const coarseTaskScheduleContextSchema = z
+export const milestoneContextSchema = z
+  .object({
+    title: z.string().min(1),
+    summary: z.string().min(1),
+  })
+  .strict();
+
+export const milestoneTaskContextSchema = z
   .object({
     projectContext: projectContextSchema,
-    projectOutline: projectPlanSchema,
+    milestone: milestoneContextSchema,
   })
   .strict();
 
