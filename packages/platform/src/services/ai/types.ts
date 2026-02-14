@@ -41,7 +41,13 @@ export interface GenerateTasksForMilestoneArgs {
 export type GenerateFocusQuestionsArgs = FocusQuestionsContextInput;
 
 export interface AIService {
-  generateFocusQuestions(args: GenerateFocusQuestionsArgs): Promise<FocusQuestionsDefinition>;
-  generateProjectOutline(args: GenerateProjectOutlineArgs): Promise<ProjectOutline>;
-  generateTasksForMilestone(args: GenerateTasksForMilestoneArgs): Promise<MilestoneTasks>;
+  generateFocusQuestions(
+    args: GenerateFocusQuestionsArgs,
+  ): Promise<FocusQuestionsDefinition>;
+  generateProjectOutline(
+    args: GenerateProjectOutlineArgs,
+  ): Promise<ProjectOutline>;
+  generateTasksForMilestone(
+    args: GenerateTasksForMilestoneArgs,
+  ): Promise<MilestoneTasks>;
 }

@@ -57,7 +57,8 @@ export function ProjectDetailsPage(): JSX.Element {
         ) : project ? (
           <>
             <p className={styles['lead']}>
-              Status: {project.status} · Responses captured: {project.responses.length}
+              Status: {project.status} · Responses captured:{' '}
+              {project.responses.length}
             </p>
             <div className={styles['projectDetailsSection']}>
               <h2>Responses</h2>

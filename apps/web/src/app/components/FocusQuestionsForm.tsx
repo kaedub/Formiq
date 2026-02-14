@@ -27,12 +27,17 @@ export const FocusQuestionsForm = ({
   onChange,
 }: FocusQuestionsFormProps): JSX.Element => {
   return (
-    <form className={styles['form']} onSubmit={(event) => event.preventDefault()}>
+    <form
+      className={styles['form']}
+      onSubmit={(event) => event.preventDefault()}
+    >
       <ol className={styles['questions']}>
         {questions.map((question) => {
           const currentResponse = responses[question.id];
           const textValue =
-            currentResponse && currentResponse.length > 0 ? currentResponse[0] : '';
+            currentResponse && currentResponse.length > 0
+              ? currentResponse[0]
+              : '';
 
           return (
             <li key={question.id} className={styles['questionCard']}>
@@ -41,7 +46,9 @@ export const FocusQuestionsForm = ({
                 <textarea
                   rows={3}
                   value={textValue}
-                  onChange={(event) => onChange(question.id, [event.target.value])}
+                  onChange={(event) =>
+                    onChange(question.id, [event.target.value])
+                  }
                   placeholder="Share a quick note or clarifying detail"
                   required={question.required}
                 />
@@ -58,7 +65,9 @@ export const FocusQuestionsForm = ({
                           Array.isArray(currentResponse) &&
                           currentResponse[0] === option.value
                         }
-                        onChange={(event) => onChange(question.id, [event.target.value])}
+                        onChange={(event) =>
+                          onChange(question.id, [event.target.value])
+                        }
                         required={question.required}
                       />
                       <span>{option.label}</span>
@@ -80,7 +89,9 @@ export const FocusQuestionsForm = ({
                           checked={isSelected}
                           onChange={(event) => {
                             const nextValues = isSelected
-                              ? currentResponse.filter((value) => value !== option.value)
+                              ? currentResponse.filter(
+                                  (value) => value !== option.value,
+                                )
                               : [...(currentResponse ?? []), option.value];
                             onChange(question.id, nextValues);
                           }}

@@ -42,8 +42,7 @@ export const parseProjectOutlineOutput = (
 
 export const parseGenerateTasksForMilestoneInput = (
   input: unknown,
-): GenerateTasksForMilestoneInput =>
-  taskGenerationContextSchema.parse(input);
+): GenerateTasksForMilestoneInput => taskGenerationContextSchema.parse(input);
 
 export const parseMilestoneTasksOutput = (
   value: unknown,

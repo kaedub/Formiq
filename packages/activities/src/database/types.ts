@@ -17,7 +17,8 @@ export type GetFocusFormByNameInput = z.infer<
   typeof getFocusFormByNameInputSchema
 >;
 export type CreateFocusFormInput = CreateFormRecordInput;
-export type CreateProjectMilestonesInputValidated = CreateProjectMilestonesInput;
+export type CreateProjectMilestonesInputValidated =
+  CreateProjectMilestonesInput;
 export type CreateMilestoneTasksInputValidated = CreateMilestoneTasksInput;
 export type FocusFormRecord = FormRecordDto;
 

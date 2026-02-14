@@ -9,7 +9,11 @@ interface ProjectListProps {
   error: string | null;
 }
 
-const ProjectCard = ({ project }: { project: ProjectSummaryDto }): JSX.Element => (
+const ProjectCard = ({
+  project,
+}: {
+  project: ProjectSummaryDto;
+}): JSX.Element => (
   <article className={styles['projectCard']}>
     <div className={styles['projectCardTop']}>
       <p className={styles['projectStatus']}>{project.status ?? 'unknown'}</p>

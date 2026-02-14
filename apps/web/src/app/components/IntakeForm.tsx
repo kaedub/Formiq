@@ -61,7 +61,9 @@ export const IntakeForm = ({
         <span>Time commitment</span>
         <select
           value={commitment}
-          onChange={(event) => onCommitmentChange(event.target.value as ProjectCommitment)}
+          onChange={(event) =>
+            onCommitmentChange(event.target.value as ProjectCommitment)
+          }
           required
         >
           {intakeForm?.questions
@@ -78,7 +80,9 @@ export const IntakeForm = ({
         <span>Familiarity</span>
         <select
           value={familiarity}
-          onChange={(event) => onFamiliarityChange(event.target.value as ProjectFamiliarity)}
+          onChange={(event) =>
+            onFamiliarityChange(event.target.value as ProjectFamiliarity)
+          }
           required
         >
           {intakeForm?.questions
@@ -95,7 +99,9 @@ export const IntakeForm = ({
         <span>Work style</span>
         <select
           value={workStyle}
-          onChange={(event) => onWorkStyleChange(event.target.value as ProjectWorkStyle)}
+          onChange={(event) =>
+            onWorkStyleChange(event.target.value as ProjectWorkStyle)
+          }
           required
         >
           {intakeForm?.questions

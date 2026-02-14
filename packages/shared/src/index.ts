@@ -135,9 +135,7 @@ export const isProjectFamiliarity = (
   typeof value === 'string' &&
   PROJECT_FAMILIARITY_VALUES.includes(value as ProjectFamiliarity);
 
-export const isProjectWorkStyle = (
-  value: unknown,
-): value is ProjectWorkStyle =>
+export const isProjectWorkStyle = (value: unknown): value is ProjectWorkStyle =>
   typeof value === 'string' &&
   PROJECT_WORK_STYLE_VALUES.includes(value as ProjectWorkStyle);
 
@@ -183,7 +181,11 @@ export type CreateMilestoneTasksInput = UserProjectInput & {
   tasks: CreateTaskInput[];
 };
 
-export const PROJECT_STATUS_VALUES = ['draft', 'generating', 'ready'] as const satisfies readonly [string, ...string[]];
+export const PROJECT_STATUS_VALUES = [
+  'draft',
+  'generating',
+  'ready',
+] as const satisfies readonly [string, ...string[]];
 export type ProjectStatus = (typeof PROJECT_STATUS_VALUES)[number];
 
 export const MILESTONE_STATUS_VALUES = [
@@ -193,7 +195,11 @@ export const MILESTONE_STATUS_VALUES = [
 ] as const satisfies readonly [string, ...string[]];
 export type MilestoneStatus = (typeof MILESTONE_STATUS_VALUES)[number];
 
-export const TASK_STATUS_VALUES = ['locked', 'unlocked', 'completed'] as const satisfies readonly [string, ...string[]];
+export const TASK_STATUS_VALUES = [
+  'locked',
+  'unlocked',
+  'completed',
+] as const satisfies readonly [string, ...string[]];
 export type TaskStatus = (typeof TASK_STATUS_VALUES)[number];
 
 export interface FormRecordDto {

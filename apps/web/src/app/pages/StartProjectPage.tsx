@@ -27,17 +27,19 @@ export function StartProjectPage(): JSX.Element {
   const [intakeForm, setIntakeForm] = useState<FormDefinition | null>(null);
   const [focusQuestions, setFocusQuestions] =
     useState<FocusQuestionsDefinition | null>(null);
-  const [focusResponses, setFocusResponses] = useState<Record<string, string[]>>({});
+  const [focusResponses, setFocusResponses] = useState<
+    Record<string, string[]>
+  >({});
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   const isReadyToSubmit = useMemo(
     () =>
       Boolean(
         goal.trim() &&
-          commitment &&
-          familiarity &&
-          workStyle &&
-          intakeForm?.questions.length,
+        commitment &&
+        familiarity &&
+        workStyle &&
+        intakeForm?.questions.length,
       ),
     [goal, commitment, familiarity, workStyle, intakeForm],
   );
@@ -64,18 +66,25 @@ export function StartProjectPage(): JSX.Element {
         );
 
         setCommitment(
-          (commitmentQuestion?.options[0]?.value as ProjectCommitment | undefined) ?? '',
+          (commitmentQuestion?.options[0]?.value as
+            | ProjectCommitment
+            | undefined) ?? '',
         );
         setFamiliarity(
-          (familiarityQuestion?.options[0]?.value as ProjectFamiliarity | undefined) ??
-            '',
+          (familiarityQuestion?.options[0]?.value as
+            | ProjectFamiliarity
+            | undefined) ?? '',
         );
         setWorkStyle(
-          (workStyleQuestion?.options[0]?.value as ProjectWorkStyle | undefined) ?? '',
+          (workStyleQuestion?.options[0]?.value as
+            | ProjectWorkStyle
+            | undefined) ?? '',
         );
       } catch (error) {
         setFetchError(
-          error instanceof Error ? error.message : 'Unable to load intake questions.',
+          error instanceof Error
+            ? error.message
+            : 'Unable to load intake questions.',
         );
         setIntakeForm(null);
       }
@@ -90,8 +99,11 @@ export function StartProjectPage(): JSX.Element {
     }
 
     return focusQuestions.questions.map((question) => {
-      const options = (question.options as Array<FormOption | string>).map((option) =>
-        typeof option === 'string' ? { value: option, label: option } : option,
+      const options = (question.options as Array<FormOption | string>).map(
+        (option) =>
+          typeof option === 'string'
+            ? { value: option, label: option }
+            : option,
       );
 
       return {
@@ -113,7 +125,10 @@ export function StartProjectPage(): JSX.Element {
 
     const initialResponses: Record<string, string[]> = {};
     normalizedFocusQuestions.forEach((question) => {
-      if (question.questionType === 'single_select' && question.options.length > 0) {
+      if (
+        question.questionType === 'single_select' &&
+        question.options.length > 0
+      ) {
         initialResponses[question.id] = [question.options[0].value];
         return;
       }
@@ -161,7 +176,9 @@ export function StartProjectPage(): JSX.Element {
 
       setSubmittedGoal(trimmed);
       setGoal('');
-      const payload = (await res.json()) as { focusQuestions: FocusQuestionsDefinition };
+      const payload = (await res.json()) as {
+        focusQuestions: FocusQuestionsDefinition;
+      };
       setFocusQuestions(payload.focusQuestions);
       setStatus('Focus questions are ready below.');
     } catch (error) {
@@ -182,7 +199,8 @@ export function StartProjectPage(): JSX.Element {
           <p className={styles['eyebrow']}>New project</p>
           <h1 className={styles['title']}>Project intake</h1>
           <p className={styles['lead']}>
-            Answer these to shape your plan. We&apos;ll build focus questions next.
+            Answer these to shape your plan. We&apos;ll build focus questions
+            next.
           </p>
         </header>
         <IntakeForm
@@ -210,7 +228,9 @@ export function StartProjectPage(): JSX.Element {
           <header className={styles['header']}>
             <p className={styles['eyebrow']}>Focus Questions</p>
             <h2 className={styles['title']}>Clarify your project</h2>
-            <p className={styles['lead']}>Answer these next to refine your plan.</p>
+            <p className={styles['lead']}>
+              Answer these next to refine your plan.
+            </p>
           </header>
           <FocusQuestionsForm
             questions={normalizedFocusQuestions}

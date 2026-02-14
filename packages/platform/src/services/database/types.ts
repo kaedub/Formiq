@@ -22,9 +22,7 @@ export interface DatabaseService {
   getProjectDetails(input: GetProjectInput): Promise<ProjectContextDto>;
   getProjectsByUserId(userId: string): Promise<ProjectSummaryDto[]>;
   getProjectIntakeForm(): Promise<FormDefinition>;
-  getFocusFormByName(
-    name: string,
-  ): Promise<FormRecordDto | null>;
+  getFocusFormByName(name: string): Promise<FormRecordDto | null>;
   createFocusForm(input: CreateFormRecordInput): Promise<FormRecordDto>;
   createProject(input: CreateProjectInput): Promise<ProjectDto>;
   createProjectMilestones(input: CreateProjectMilestonesInput): Promise<void>;

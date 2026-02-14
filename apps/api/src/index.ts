@@ -1,6 +1,11 @@
 import cors from 'cors';
 import express from 'express';
-import { createAIService, createDatabaseService, getOpenAIClient, getPrismaClient } from '@formiq/platform';
+import {
+  createAIService,
+  createDatabaseService,
+  getOpenAIClient,
+  getPrismaClient,
+} from '@formiq/platform';
 import {
   TEST_USER_ID,
   isProjectCommitment,
@@ -45,7 +50,6 @@ const normalizeResponses = (responses: unknown): QuestionResponseInput[] => {
     return { questionId, values };
   });
 };
-
 
 app.get('/', (_req, res) => {
   res.send('Welcome to the Project Intake API');
@@ -100,7 +104,12 @@ app.post('/projects/start', async (req, res) => {
   }
 
   const goal = goalRaw.trim();
-  console.info('Received new project intake', { goal, commitment, familiarity, workStyle });
+  console.info('Received new project intake', {
+    goal,
+    commitment,
+    familiarity,
+    workStyle,
+  });
 
   const project = await db.createProject({
     userId: TEST_USER_ID,
