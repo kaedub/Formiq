@@ -101,19 +101,54 @@ const run = async (): Promise<void> => {
   await databaseService.createProjectMilestones({
     projectId: project.id,
     userId: USER_ID,
-    milestones
+    milestones,
   });
 
-  const milestone = milestones[0]!;
+  let { project: projectDetails } = await databaseService.getProjectDetails({
+    userId: USER_ID,
+    projectId: project.id,
+  });
+
+  console.log('Project Details', projectDetails);
+
+  let milestone = projectDetails.milestones[0]!;
+
   const { tasks } = await aiService.generateTasksForMilestone({
     project,
     milestone,
   });
 
+  console.log('\n');
+  console.log(projectDetails);
+
   console.log('\nGenerated tasks for ', milestone.title, '...');
   for (const task of tasks) {
     console.log(task);
   }
+
+  const tasksInput = tasks.map((task, index) => {
+    const description = JSON.stringify({
+      body: task.body,
+      objective: task.objective,
+      estimatedMinutes: task.estimatedMinutes,
+    });
+    return {
+      title: task.title,
+      position: index + 1,
+      description,
+    };
+  });
+  await databaseService.createMilestoneTasks({
+    userId: USER_ID,
+    milestoneId: milestone.id,
+    projectId: project.id,
+    tasks: tasksInput,
+  });
+
+  const finalState = await databaseService.getProjectDetails({
+    userId: USER_ID,
+    projectId: project.id,
+  });
 };
 
 run().catch((error: unknown) => {

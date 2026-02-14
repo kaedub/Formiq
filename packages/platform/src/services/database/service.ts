@@ -1,4 +1,4 @@
-import { MilestoneStatus, type PrismaClient } from '@prisma/client';
+import { MilestoneStatus, TaskStatus, type PrismaClient } from '@prisma/client';
 import type { DatabaseService, DatabaseServiceDependencies } from './types.js';
 import type {
   CreateMilestoneTasksInput,
@@ -19,16 +19,17 @@ import type {
 import {
   mapMilestoneDto,
   mapIntakeFormDto,
-  mapPromptExecutionDto,
   mapProjectDto,
-  mapProjectEventDto,
   mapTaskDto,
 } from './mappers.js';
 
 class PrismaDatabaseService implements DatabaseService {
   constructor(private readonly db: PrismaClient) {}
 
-  async getProject({ projectId, userId }: GetProjectInput): Promise<ProjectDto | null> {
+  async getProject({
+    projectId,
+    userId,
+  }: GetProjectInput): Promise<ProjectDto | null> {
     const project = (await this.db.project.findFirst({
       where: {
         id: projectId,
@@ -51,7 +52,10 @@ class PrismaDatabaseService implements DatabaseService {
     return project ? mapProjectDto(project) : null;
   }
 
-  async getProjectContext({ projectId, userId }: GetProjectInput): Promise<ProjectContextDto> {
+  async getProjectDetails({
+    projectId,
+    userId,
+  }: GetProjectInput): Promise<ProjectContextDto> {
     const project = (await this.db.project.findFirst({
       where: {
         id: projectId,
@@ -82,14 +86,17 @@ class PrismaDatabaseService implements DatabaseService {
       throw new Error(`Project ${projectId} not found for user ${userId}`);
     }
 
+    const projectDto = mapProjectDto(project as ProjectWithResponses);
+    const milestones = project.milestones.map((milestone) => ({
+      ...mapMilestoneDto(milestone),
+      tasks: milestone.tasks.map(mapTaskDto),
+    }));
+
     return {
-      project: mapProjectDto(project as ProjectWithResponses),
-      milestones: project.milestones.map(mapMilestoneDto),
-      tasks: project.milestones.flatMap((milestone) =>
-        milestone.tasks.map(mapTaskDto),
-      ),
-      promptExecutions: project.promptExecutions.map(mapPromptExecutionDto),
-      events: project.events.map(mapProjectEventDto),
+      project: {
+        ...projectDto,
+        milestones,
+      },
     };
   }
 
@@ -188,7 +195,9 @@ class PrismaDatabaseService implements DatabaseService {
     return mapProjectDto(project);
   }
 
-  async createProjectMilestones(input: CreateProjectMilestonesInput): Promise<void> {
+  async createProjectMilestones(
+    input: CreateProjectMilestonesInput,
+  ): Promise<void> {
     const { projectId, userId, milestones } = input;
     const project = await this.db.project.findFirst({
       where: {
@@ -231,7 +240,57 @@ class PrismaDatabaseService implements DatabaseService {
     });
   }
 
-  async createMilestoneTasks(args: CreateMilestoneTasksInput): Promise<void> {
+  async createMilestoneTasks(input: CreateMilestoneTasksInput): Promise<void> {
+    const { projectId, userId, milestoneId, tasks } = input;
+
+    const project = await this.db.project.findFirst({
+      where: {
+        id: projectId,
+        userId,
+      },
+      select: {
+        id: true,
+        milestones: {
+          where: {
+            id: milestoneId,
+          },
+          select: {
+            id: true,
+            tasks: {
+              select: {
+                id: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!project) {
+      throw new Error(`Project ${projectId} not found for user ${userId}`);
+    }
+
+    const [milestone] = project.milestones;
+
+    if (!milestone) {
+      throw new Error(
+        `Milestone ${milestoneId} not found for project ${projectId}`,
+      );
+    }
+
+    if (milestone.tasks.length > 0) {
+      throw new Error(`Milestone ${milestoneId} already has tasks`);
+    }
+
+    await this.db.task.createMany({
+      data: tasks.map((task) => ({
+        milestoneId,
+        title: task.title,
+        description: task.description,
+        position: task.position,
+        status: TaskStatus.locked,
+      })),
+    });
   }
 }
 

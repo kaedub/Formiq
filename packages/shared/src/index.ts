@@ -1,10 +1,9 @@
-
 export type QuestionType = 'multi_select' | 'single_select' | 'free_text';
 
 type UserProjectInput = {
   userId: string;
   projectId: string;
-}
+};
 
 export interface QuestionResponseInput {
   questionId: string;
@@ -19,14 +18,20 @@ export interface CreateProjectInput {
   responses: QuestionResponseInput[];
 }
 
-
 export type CreateProjectMilestonesInput = UserProjectInput & {
-  milestones: MilestoneDto[]
-}
+  milestones: MilestoneDto[];
+};
+
+type CreateTaskInput = {
+  title: string;
+  description: string;
+  position: number;
+};
 
 export type CreateMilestoneTasksInput = UserProjectInput & {
   milestoneId: string;
-}
+  tasks: CreateTaskInput[];
+};
 
 export type ProjectStatus = 'draft' | 'generating' | 'ready';
 
@@ -144,12 +149,16 @@ export interface ProjectEventDto {
   createdAt: string;
 }
 
-export interface ProjectContextDto {
-  project: ProjectDto;
-  milestones: MilestoneDto[];
+export interface ProjectContextMilestoneDto extends MilestoneDto {
   tasks: TaskDto[];
-  promptExecutions: PromptExecutionDto[];
-  events: ProjectEventDto[];
+}
+
+export interface ProjectContextProjectDto extends ProjectDto {
+  milestones: ProjectContextMilestoneDto[];
+}
+
+export interface ProjectContextDto {
+  project: ProjectContextProjectDto;
 }
 
 export interface ProjectResponse {

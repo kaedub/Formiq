@@ -19,15 +19,11 @@ export type DatabaseServiceDependencies = {
 
 export interface DatabaseService {
   getProject(input: GetProjectInput): Promise<ProjectDto | null>;
-  getProjectContext(input: GetProjectInput): Promise<ProjectContextDto>;
+  getProjectDetails(input: GetProjectInput): Promise<ProjectContextDto>;
   getProjectsByUserId(userId: string): Promise<ProjectSummaryDto[]>;
   getIntakeFormByName(name: string): Promise<IntakeFormDto | null>;
   createIntakeForm(input: CreateIntakeFormInput): Promise<IntakeFormDto>;
   createProject(input: CreateProjectInput): Promise<ProjectDto>;
-  createProjectMilestones(
-    input: CreateProjectMilestonesInput
-  ): Promise<void>;
-  createMilestoneTasks(
-    input: CreateMilestoneTasksInput
-  ): Promise<void>;
+  createProjectMilestones(input: CreateProjectMilestonesInput): Promise<void>;
+  createMilestoneTasks(input: CreateMilestoneTasksInput): Promise<void>;
 }

@@ -77,7 +77,10 @@ describe('PrismaDatabaseService integration', () => {
     const user = await createTestUser(prisma);
     const created = await service.createProject(buildProjectInput(user.id));
 
-    const fetched = await service.getProject(created.id, user.id);
+    const fetched = await service.getProject({
+      projectId: created.id,
+      userId: user.id
+  });
 
     expect(fetched).not.toBeNull();
     expect(fetched?.id).toBe(created.id);
@@ -89,12 +92,15 @@ describe('PrismaDatabaseService integration', () => {
     const intruder = await createTestUser(prisma);
     const created = await service.createProject(buildProjectInput(owner.id));
 
-    const fetched = await service.getProject(created.id, intruder.id);
+    const fetched = await service.getProject({
+      projectId: created.id,
+      userId: intruder.id
+    });
 
     expect(fetched).toBeNull();
   });
 
-  it('returns project context with milestones, tasks, prompt executions, and events', async () => {
+  it('returns full project details with milestones and tasks', async () => {
     const user = await createTestUser(prisma);
     const project = await service.createProject(buildProjectInput(user.id));
 
@@ -136,20 +142,24 @@ describe('PrismaDatabaseService integration', () => {
       },
     });
 
-    const context = await service.getProjectContext(project.id, user.id);
+    const context = await service.getProjectDetails({
+      projectId: project.id,
+      userId: user.id,
+    });
 
     expect(context.project.id).toBe(project.id);
-    expect(context.milestones).toHaveLength(1);
-    expect(context.tasks).toHaveLength(1);
-    expect(context.promptExecutions).toHaveLength(1);
-    expect(context.events).toHaveLength(1);
+    expect(context.project.milestones).toHaveLength(1);
+    expect(context.project.milestones[0]?.tasks).toHaveLength(1);
   });
 
-  it('throws when requesting context for a missing project', async () => {
+  it('throws when requesting details for a missing project', async () => {
     const user = await createTestUser(prisma);
 
     await expect(
-      service.getProjectContext('missing-project', user.id),
+      service.getProjectDetails({
+        projectId: 'missing-project',
+        userId: user.id,
+      }),
     ).rejects.toThrow(/not found/i);
   });
 
