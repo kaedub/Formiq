@@ -1,5 +1,7 @@
 export type QuestionType = 'multi_select' | 'single_select' | 'free_text';
 
+export const TEST_USER_ID = 'test-user-id' as const;
+
 type UserProjectInput = {
   userId: string;
   projectId: string;

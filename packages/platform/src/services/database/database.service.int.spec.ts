@@ -79,8 +79,8 @@ describe('PrismaDatabaseService integration', () => {
 
     const fetched = await service.getProject({
       projectId: created.id,
-      userId: user.id
-  });
+      userId: user.id,
+    });
 
     expect(fetched).not.toBeNull();
     expect(fetched?.id).toBe(created.id);
@@ -94,7 +94,7 @@ describe('PrismaDatabaseService integration', () => {
 
     const fetched = await service.getProject({
       projectId: created.id,
-      userId: intruder.id
+      userId: intruder.id,
     });
 
     expect(fetched).toBeNull();

@@ -1,4 +1,5 @@
 import { getPrismaClient } from '../src/clients/prisma.js';
+import { TEST_USER_ID } from '@formiq/shared';
 import type { QuestionType } from '@formiq/shared';
 
 type IntakeQuestionSeed = {
@@ -13,7 +14,7 @@ const prisma = getPrismaClient();
 
 const intakeFormName = 'goal_intake_v1';
 const testUser = {
-  id: 'test-user-id',
+  id: TEST_USER_ID,
   email: 'test-user@example.com',
   password: 'test',
 };

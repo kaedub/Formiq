@@ -167,6 +167,27 @@
   color: #111827;
 }
 
+.projectCardActions {
+  margin-top: 0.5rem;
+}
+
+.secondaryLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #1d4ed8;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.projectDetailsSection {
+  margin-top: 1rem;
+}
+
 .panel {
   background: #ffffff;
   border: 1px solid #e5e7eb;

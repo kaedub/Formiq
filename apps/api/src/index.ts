@@ -1,6 +1,7 @@
 import cors from 'cors';
 import express from 'express';
 import { createDatabaseService, getPrismaClient } from '@formiq/platform';
+import { TEST_USER_ID } from '@formiq/shared';
 import type { QuestionResponseInput } from '@formiq/shared';
 
 const app = express();
@@ -11,7 +12,6 @@ const prisma = getPrismaClient();
 const db = createDatabaseService({ db: prisma });
 
 const DEFAULT_FORM_NAME = 'goal_intake_v1';
-const TEST_USER_ID = 'test-user-id';
 
 const normalizeResponses = (responses: unknown): QuestionResponseInput[] => {
   if (!Array.isArray(responses)) {
@@ -88,6 +88,29 @@ app.get('/projects', async (_req, res) => {
   } catch (error) {
     console.error('Failed to fetch projects', error);
     return res.status(500).json({ message: 'Unable to fetch projects' });
+  }
+});
+
+app.get('/projects/:projectId', async (req, res) => {
+  const userId = TEST_USER_ID;
+  const projectId = req.params['projectId'];
+
+  if (!projectId) {
+    return res.status(400).json({ message: 'projectId is required' });
+  }
+
+  try {
+    const context = await db.getProjectDetails({ userId, projectId });
+    return res.json(context);
+  } catch (error) {
+    console.error('Failed to fetch project details', error);
+    if (
+      error instanceof Error &&
+      error.message.toLowerCase().includes('not found')
+    ) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+    return res.status(500).json({ message: 'Unable to fetch project details' });
   }
 });
 

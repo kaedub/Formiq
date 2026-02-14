@@ -5,16 +5,15 @@ import {
   getPrismaClient,
 } from '@formiq/platform';
 import type { CreateProjectInput, MilestoneDto } from '@formiq/shared';
+import { TEST_USER_ID } from '@formiq/shared';
 import { MilestoneStatus, type PrismaClient } from '@prisma/client';
-
-const USER_ID = 'test-user-id';
 
 const ensureTestUser = async (prisma: PrismaClient): Promise<void> => {
   await prisma.user.upsert({
-    where: { id: USER_ID },
+    where: { id: TEST_USER_ID },
     update: {},
     create: {
-      id: USER_ID,
+      id: TEST_USER_ID,
       email: 'test-user@example.com',
       password: 'password',
     },
@@ -32,7 +31,7 @@ const run = async (): Promise<void> => {
     await databaseService.getIntakeFormByName('goal_intake_v1');
 
   const projectInput: CreateProjectInput = {
-    userId: USER_ID,
+    userId: TEST_USER_ID,
     title: 'Test Project',
     responses: [],
   };
@@ -100,12 +99,12 @@ const run = async (): Promise<void> => {
 
   await databaseService.createProjectMilestones({
     projectId: project.id,
-    userId: USER_ID,
+    userId: TEST_USER_ID,
     milestones,
   });
 
   let { project: projectDetails } = await databaseService.getProjectDetails({
-    userId: USER_ID,
+    userId: TEST_USER_ID,
     projectId: project.id,
   });
 
@@ -139,14 +138,14 @@ const run = async (): Promise<void> => {
     };
   });
   await databaseService.createMilestoneTasks({
-    userId: USER_ID,
+    userId: TEST_USER_ID,
     milestoneId: milestone.id,
     projectId: project.id,
     tasks: tasksInput,
   });
 
   const finalState = await databaseService.getProjectDetails({
-    userId: USER_ID,
+    userId: TEST_USER_ID,
     projectId: project.id,
   });
 };
