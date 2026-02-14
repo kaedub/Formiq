@@ -1,0 +1,14 @@
+{
+  "name": "workflows",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/workflows/src",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "yarn tsc -b packages/workflows/tsconfig.json"
+      },
+      "outputs": ["{projectRoot}/dist"]
+    }
+  }
+}

@@ -4,9 +4,9 @@ import {
   getOpenAIClient,
   getPrismaClient,
 } from '@formiq/platform';
-import type { CreateProjectInput, MilestoneDto } from '@formiq/shared';
+import type { CreateProjectInput, CreateMilestoneInput } from '@formiq/shared';
 import { TEST_USER_ID } from '@formiq/shared';
-import { MilestoneStatus, type PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
 
 const ensureTestUser = async (prisma: PrismaClient): Promise<void> => {
   await prisma.user.upsert({
@@ -84,14 +84,11 @@ const run = async (): Promise<void> => {
     console.log(milestone);
   });
 
-  const milestones: MilestoneDto[] = outline.milestones.map(
+  const milestones: CreateMilestoneInput[] = outline.milestones.map(
     (milestone, index) => ({
-      id: `${project.id}-milestone-${index + 1}`,
-      projectId: project.id,
       title: milestone.title,
       summary: milestone.description,
       position: index,
-      status: MilestoneStatus.locked,
     }),
   );
 

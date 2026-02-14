@@ -9,7 +9,7 @@
 - `apps/api` (`@formiq/api`): Express API for auth/project endpoints and Temporal kicks; serves compiled output via `nx run api:serve`.
 - `packages/platform` (`@formiq/platform`): Data/integration layer (Prisma schema/client, PG adapter, env loading).
 - `packages/shared` (`@formiq/shared`): Shared types/DTOs used across API, UI, and LLM payloads.
-- `packages/temporal/workflows` (`@formiq/workflows`) and `packages/temporal/activities` (`@formiq/activities`): Temporal workflow orchestration and activities that call into `@formiq/platform`.
+- `packages/workflows` (`@formiq/workflows`) and `packages/activities` (`@formiq/activities`): Temporal workflow orchestration and activities that call into `@formiq/platform`.
 
 ## Setup
 

@@ -6,8 +6,8 @@
     "apps/*",
     "packages/platform",
     "packages/shared",
-    "packages/temporal/workflows",
-    "packages/temporal/activities"
+    "packages/workflows",
+    "packages/activities"
   ],
   "scripts": {
     "build": "tsc -b",

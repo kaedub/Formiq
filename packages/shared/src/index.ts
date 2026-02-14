@@ -1,4 +1,9 @@
-export type QuestionType = 'multi_select' | 'single_select' | 'free_text';
+export const QUESTION_TYPE_VALUES = [
+  'multi_select',
+  'single_select',
+  'free_text',
+] as const;
+export type QuestionType = (typeof QUESTION_TYPE_VALUES)[number];
 
 export const TEST_USER_ID = 'test-user-id' as const;
 
@@ -142,8 +147,14 @@ export interface CreateProjectInput {
   responses: QuestionResponseInput[];
 }
 
+export interface CreateMilestoneInput {
+  title: string;
+  summary: string;
+  position: number;
+}
+
 export type CreateProjectMilestonesInput = UserProjectInput & {
-  milestones: MilestoneDto[];
+  milestones: CreateMilestoneInput[];
 };
 
 type CreateTaskInput = {
@@ -157,11 +168,18 @@ export type CreateMilestoneTasksInput = UserProjectInput & {
   tasks: CreateTaskInput[];
 };
 
-export type ProjectStatus = 'draft' | 'generating' | 'ready';
+export const PROJECT_STATUS_VALUES = ['draft', 'generating', 'ready'] as const;
+export type ProjectStatus = (typeof PROJECT_STATUS_VALUES)[number];
 
-export type MilestoneStatus = 'locked' | 'unlocked' | 'completed';
+export const MILESTONE_STATUS_VALUES = [
+  'locked',
+  'unlocked',
+  'completed',
+] as const;
+export type MilestoneStatus = (typeof MILESTONE_STATUS_VALUES)[number];
 
-export type TaskStatus = 'locked' | 'unlocked' | 'completed';
+export const TASK_STATUS_VALUES = ['locked', 'unlocked', 'completed'] as const;
+export type TaskStatus = (typeof TASK_STATUS_VALUES)[number];
 
 export interface FormRecordDto {
   id: string;
@@ -169,6 +187,11 @@ export interface FormRecordDto {
   projectId: string;
   kind: 'project_intake' | 'focus_questions';
 }
+
+export const FORM_RECORD_KIND_VALUES = [
+  'project_intake',
+  'focus_questions',
+] as const;
 
 export interface CreateFormRecordInput {
   name: string;
@@ -234,14 +257,23 @@ export interface ProjectSummaryDto {
   status?: ProjectStatus;
 }
 
+export const PROMPT_EXECUTION_STAGE_VALUES = [
+  'project_context',
+  'milestone_outline',
+  'milestone_validation',
+  'task_generation',
+  'task_validation',
+] as const;
 export type PromptExecutionStage =
-  | 'project_context'
-  | 'milestone_outline'
-  | 'milestone_validation'
-  | 'task_generation'
-  | 'task_validation';
+  (typeof PROMPT_EXECUTION_STAGE_VALUES)[number];
 
-export type PromptExecutionStatus = 'pending' | 'success' | 'failed';
+export const PROMPT_EXECUTION_STATUS_VALUES = [
+  'pending',
+  'success',
+  'failed',
+] as const;
+export type PromptExecutionStatus =
+  (typeof PROMPT_EXECUTION_STATUS_VALUES)[number];
 
 export interface PromptExecutionDto {
   id: string;
@@ -258,11 +290,13 @@ export interface PromptExecutionDto {
   createdAt: string;
 }
 
-export type ProjectEventType =
-  | 'status_change'
-  | 'milestone_generated'
-  | 'task_generated'
-  | 'task_completed';
+export const PROJECT_EVENT_TYPE_VALUES = [
+  'status_change',
+  'milestone_generated',
+  'task_generated',
+  'task_completed',
+] as const;
+export type ProjectEventType = (typeof PROJECT_EVENT_TYPE_VALUES)[number];
 
 export interface ProjectEventDto {
   id: string;

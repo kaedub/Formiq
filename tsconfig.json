@@ -14,10 +14,10 @@
       "path": "./apps/worker"
     },
     {
-      "path": "./packages/temporal/workflows"
+      "path": "./packages/workflows"
     },
     {
-      "path": "./packages/temporal/activities"
+      "path": "./packages/activities"
     },
     {
       "path": "./apps/worker"

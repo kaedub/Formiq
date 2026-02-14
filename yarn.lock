@@ -1674,9 +1674,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@formiq/activities@workspace:packages/temporal/activities":
+"@formiq/activities@workspace:packages/activities":
   version: 0.0.0-use.local
-  resolution: "@formiq/activities@workspace:packages/temporal/activities"
+  resolution: "@formiq/activities@workspace:packages/activities"
   dependencies:
     typescript: "npm:^5.9.3"
   languageName: unknown
@@ -1728,9 +1728,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@formiq/workflows@workspace:packages/temporal/workflows":
+"@formiq/workflows@workspace:packages/workflows":
   version: 0.0.0-use.local
-  resolution: "@formiq/workflows@workspace:packages/temporal/workflows"
+  resolution: "@formiq/workflows@workspace:packages/workflows"
   dependencies:
     typescript: "npm:^5.9.3"
   languageName: unknown
