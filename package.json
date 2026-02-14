@@ -23,7 +23,9 @@
     "db:seed": "yarn prisma db seed",
     "db:wipe": "yarn prisma db wipe --force",
     "db:migrate": "yarn prisma migrate dev --name",
-    "worker:run": "nx run worker:run"
+    "worker:run": "nx run worker:run",
+    "precommit": "yarn db:generate && yarn build && yarn format && yarn lint",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@nx/eslint": "22.3.3",
@@ -51,6 +53,7 @@
     "eslint-plugin-jsx-a11y": "6.10.1",
     "eslint-plugin-react": "7.35.0",
     "eslint-plugin-react-hooks": "5.0.0",
+    "husky": "^9.1.7",
     "jiti": "2.4.2",
     "jsdom": "~22.1.0",
     "nx": "22.3.3",
