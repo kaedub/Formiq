@@ -1,0 +1,21 @@
+---
+description: Layering and dependency direction for the codebase
+globs: "packages/**/*.ts,apps/**/*.ts"
+alwaysApply: false
+---
+
+# Architecture — Layering and Dependencies
+
+## Layering
+- **Domain**: Types, business rules, and result types. No imports from infrastructure (Prisma, OpenAI, HTTP, queues). Lives in shared types or domain modules.
+- **Services**: Implement interfaces (e.g. `DatabaseService`, `AIService`). Depend on interfaces and domain types, not concrete infra. Orchestrate use cases.
+- **Boundaries**: HTTP handlers, queue handlers, CLI. Depend on services and shared DTOs. Validate input → call service → map result to response. Only place that may throw at process level or return HTTP status.
+
+## Dependency direction
+- Domain does not depend on infrastructure or framework.
+- Services depend on interfaces and domain types; infra (DB client, AI client) is injected.
+- Boundaries depend on services and DTOs; they do not import Prisma/OpenAI directly for business logic.
+
+## Where things live
+- One interface per capability (e.g. one service interface per “bounded” capability). Implementations can be in the same package or a dedicated one.
+- Adapters (e.g. Prisma implementation of a repository) live next to the interface or in an `impl`/adapter folder; dependents depend on the interface only.

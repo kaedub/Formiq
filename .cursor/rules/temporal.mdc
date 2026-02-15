@@ -1,0 +1,17 @@
+---
+description: Temporal workflows and activities — determinism, boundaries, platform-only side effects
+globs: "**/*workflow*.ts,**/*activity*.ts,**/workflows/**/*.ts,**/activities/**/*.ts"
+alwaysApply: false
+---
+
+# Temporal
+
+## Workflows
+- **Determinism**: No `Date.now()`, `Math.random()`, or other non-deterministic APIs. Use workflow time and activities for time and randomness.
+- **Imports**: Only `@temporalio/workflow` and shared (or domain) code. No direct import of activity implementations, platform code, or Node built-ins that can be non-deterministic.
+- **Activities**: Reference activities only via `proxyActivities`. Never import activity implementations in workflow code.
+
+## Activities
+- **Thin**: Validate input (e.g. Zod) at the activity layer, then delegate. No business logic beyond validation and a single call.
+- **Side effects**: All side effects go through platform code (injected services). Activities do not call Prisma, OpenAI, or other infra directly.
+- **Idempotency**: Design activities so they are safe to retry; document when an activity is not idempotent.
