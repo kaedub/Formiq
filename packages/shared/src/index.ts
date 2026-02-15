@@ -16,9 +16,9 @@ export const PROJECT_COMMITMENT_VALUES = [
 export type ProjectCommitment = (typeof PROJECT_COMMITMENT_VALUES)[number];
 
 export const PROJECT_FAMILIARITY_VALUES = [
-  'beginner',
-  'intermediate',
-  'advanced',
+  'completely_new',
+  'some_experience',
+  'experienced_refining',
 ] as const satisfies readonly [string, ...string[]];
 export type ProjectFamiliarity = (typeof PROJECT_FAMILIARITY_VALUES)[number];
 
@@ -31,19 +31,19 @@ export type ProjectWorkStyle = (typeof PROJECT_WORK_STYLE_VALUES)[number];
 
 // TODO: These options can be cleaned up or maybe become database level
 export const PROJECT_COMMITMENT_OPTIONS = [
-  { value: 'light', label: '1-4 hours' },
-  { value: 'moderate', label: '4-10 hours' },
-  { value: 'heavy', label: '10-20 hours' },
-  { value: 'dedicated', label: '20-40 hours' },
+  { value: 'light', label: 'Light' },
+  { value: 'moderate', label: 'Moderate' },
+  { value: 'heavy', label: 'Heavy' },
+  { value: 'dedicated', label: 'Dedicated' },
 ] as const satisfies ReadonlyArray<{
   value: ProjectCommitment;
   label: string;
 }>;
 
 export const PROJECT_FAMILIARITY_OPTIONS = [
-  { value: 'beginner', label: 'Completely new' },
-  { value: 'intermediate', label: 'Some experience' },
-  { value: 'advanced', label: 'Experienced / refining' },
+  { value: 'completely_new', label: 'Completely new' },
+  { value: 'some_experience', label: 'Some experience' },
+  { value: 'experienced_refining', label: 'Experienced / refining' },
 ] as const satisfies ReadonlyArray<{
   value: ProjectFamiliarity;
   label: string;
@@ -86,10 +86,15 @@ export interface ProjectIntakeAnswers {
   workStyle: ProjectWorkStyle;
 }
 
+export const INTAKE_QUESTION_ID_GOAL = 'goal' as const;
+export const INTAKE_QUESTION_ID_COMMITMENT = 'time_commitment' as const;
+export const INTAKE_QUESTION_ID_FAMILIARITY = 'familiarity' as const;
+export const INTAKE_QUESTION_ID_WORK_STYLE = 'work_style' as const;
+
 export const PROJECT_INTAKE_FORM: FormDefinition = {
   questions: [
     {
-      id: 'goal',
+      id: INTAKE_QUESTION_ID_GOAL,
       prompt: 'What do you want to accomplish?',
       questionType: 'free_text',
       options: [],
@@ -97,7 +102,7 @@ export const PROJECT_INTAKE_FORM: FormDefinition = {
       required: true,
     },
     {
-      id: 'time_commitment',
+      id: INTAKE_QUESTION_ID_COMMITMENT,
       prompt: 'How much time can you realistically commit per week?',
       questionType: 'single_select',
       options: PROJECT_COMMITMENT_OPTIONS,
@@ -105,7 +110,7 @@ export const PROJECT_INTAKE_FORM: FormDefinition = {
       required: true,
     },
     {
-      id: 'familiarity',
+      id: INTAKE_QUESTION_ID_FAMILIARITY,
       prompt: 'How familiar are you with this area?',
       questionType: 'single_select',
       options: PROJECT_FAMILIARITY_OPTIONS,
@@ -113,7 +118,7 @@ export const PROJECT_INTAKE_FORM: FormDefinition = {
       required: true,
     },
     {
-      id: 'work_style',
+      id: INTAKE_QUESTION_ID_WORK_STYLE,
       prompt: 'How do you prefer to work?',
       questionType: 'single_select',
       options: PROJECT_WORK_STYLE_OPTIONS,
@@ -157,6 +162,9 @@ export type GetProjectInput = UserProjectInput;
 export interface CreateProjectInput {
   userId: string;
   title: string;
+  commitment: ProjectCommitment;
+  familiarity: ProjectFamiliarity;
+  workStyle: ProjectWorkStyle;
   responses: QuestionResponseInput[];
 }
 
@@ -295,6 +303,9 @@ export interface ProjectDto {
   id: string;
   userId: string;
   title: string;
+  commitment: ProjectCommitment;
+  familiarity: ProjectFamiliarity;
+  workStyle: ProjectWorkStyle;
   status: ProjectStatus;
   generatedAt: string | null;
   createdAt: string;

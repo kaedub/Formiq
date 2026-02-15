@@ -52,9 +52,9 @@ const commitmentHoursMap: Record<ProjectCommitment, number> = {
 };
 
 const familiarityEffortLevelMap: Record<ProjectFamiliarity, EffortLevel> = {
-  beginner: 'beginner',
-  intermediate: 'intermediate',
-  advanced: 'advanced',
+  completely_new: 'beginner',
+  some_experience: 'intermediate',
+  experienced_refining: 'advanced',
 };
 
 const workStyleLabelMap: Record<ProjectWorkStyle, string> = {

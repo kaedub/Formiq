@@ -28,5 +28,8 @@ export const createTestUser = async (
 export const buildProjectInput = (userId: string): CreateProjectInput => ({
   userId,
   title: 'Test project',
+  commitment: 'moderate',
+  familiarity: 'some_experience',
+  workStyle: 'flexible_or_varies',
   responses: [],
 });

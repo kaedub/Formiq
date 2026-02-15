@@ -35,6 +35,9 @@ describe('PrismaDatabaseService integration', () => {
 
     expect(result.title).toBe(input.title);
     expect(result.userId).toBe(user.id);
+    expect(result.commitment).toBe(input.commitment);
+    expect(result.familiarity).toBe(input.familiarity);
+    expect(result.workStyle).toBe(input.workStyle);
   });
 
   it('fetches a project by id for the owning user', async () => {

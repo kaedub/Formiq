@@ -126,6 +126,9 @@ app.post('/projects/start', async (req, res) => {
   const project = await db.createProject({
     userId: TEST_USER_ID,
     title: goal,
+    commitment,
+    familiarity,
+    workStyle,
     responses: [],
   });
 
@@ -189,10 +192,22 @@ app.get('/projects/:projectId', async (req, res) => {
 app.post('/projects', async (req, res) => {
   const body = (req.body ?? {}) as Record<string, unknown>;
   const title = body['title'];
+  const commitment = body['commitment'];
+  const familiarity = body['familiarity'];
+  const workStyle = body['workStyle'];
   const responses = body['responses'];
   const userId = TEST_USER_ID;
   if (typeof title !== 'string' || title.trim().length === 0) {
     return res.status(400).json({ message: 'title is required' });
+  }
+  if (!isProjectCommitment(commitment)) {
+    return res.status(400).json({ message: 'commitment is invalid' });
+  }
+  if (!isProjectFamiliarity(familiarity)) {
+    return res.status(400).json({ message: 'familiarity is invalid' });
+  }
+  if (!isProjectWorkStyle(workStyle)) {
+    return res.status(400).json({ message: 'workStyle is invalid' });
   }
 
   try {
@@ -200,6 +215,9 @@ app.post('/projects', async (req, res) => {
     const project = await db.createProject({
       userId,
       title: title.trim(),
+      commitment,
+      familiarity,
+      workStyle,
       responses: normalized,
     });
     return res.json(project);

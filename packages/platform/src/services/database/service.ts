@@ -178,6 +178,9 @@ class PrismaDatabaseService implements DatabaseService {
       data: {
         userId: input.userId,
         title: input.title,
+        commitment: input.commitment,
+        familiarity: input.familiarity,
+        workStyle: input.workStyle,
       },
     });
 

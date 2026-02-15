@@ -10,6 +10,9 @@ const sampleProject: ProjectDto = {
   id: 'test-project-1',
   userId: TEST_USER_ID,
   title: 'Learn TypeScript',
+  commitment: 'moderate',
+  familiarity: 'some_experience',
+  workStyle: 'short_daily_sessions',
   status: 'draft',
   generatedAt: null,
   createdAt: new Date().toISOString(),
@@ -33,7 +36,7 @@ const input: GenerateProjectRoadmapInput = {
   intakeAnswers: {
     goal: 'Build a full-stack web app',
     commitment: 'moderate',
-    familiarity: 'intermediate',
+    familiarity: 'some_experience',
     workStyle: 'short_daily_sessions',
   },
 };
