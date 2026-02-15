@@ -1,46 +1,47 @@
 import { createDatabaseService, getPrismaClient } from '@formiq/platform';
-import type { FormRecordDto } from '@formiq/shared';
+import type { DatabaseActivities } from '@formiq/shared';
 import {
   parseCreateFormRecordInput,
   parseCreateMilestoneTasksInput,
   parseCreateProjectMilestonesInput,
   parseReplaceFocusFormItemsInput,
+  parseGetProjectFocusFormInput,
+  parseFocusFormDto,
   parseFormRecord,
-  parseGetFocusFormByNameInput,
 } from './types.js';
 
 const databaseService = createDatabaseService({ db: getPrismaClient() });
 
-export const getFocusFormByName = async (
-  input: unknown,
-): Promise<FormRecordDto | null> => {
-  const { name } = parseGetFocusFormByNameInput(input);
-  const formRecord = await databaseService.getFocusFormByName(name);
+export const getProjectFocusForm: DatabaseActivities['getProjectFocusForm'] =
+  async (input) => {
+    const parsed = parseGetProjectFocusFormInput(input);
+    const focusForm = await databaseService.getProjectFocusForm(parsed);
 
-  return formRecord ? parseFormRecord(formRecord) : null;
-};
+    return focusForm ? parseFocusFormDto(focusForm) : null;
+  };
 
-export const createFocusForm = async (
-  input: unknown,
-): Promise<FormRecordDto> => {
+export const createFocusForm: DatabaseActivities['createFocusForm'] = async (
+  input,
+) => {
   const parsedInput = parseCreateFormRecordInput(input);
   const formRecord = await databaseService.createFocusForm(parsedInput);
   return parseFormRecord(formRecord);
 };
 
-export const createProjectMilestones = async (
-  input: unknown,
-): Promise<void> => {
-  const parsedInput = parseCreateProjectMilestonesInput(input);
-  await databaseService.createProjectMilestones(parsedInput);
-};
+export const replaceFocusFormItems: DatabaseActivities['replaceFocusFormItems'] =
+  async (input) => {
+    const parsedInput = parseReplaceFocusFormItemsInput(input);
+    await databaseService.replaceFocusFormItems(parsedInput);
+  };
 
-export const replaceFocusFormItems = async (input: unknown): Promise<void> => {
-  const parsedInput = parseReplaceFocusFormItemsInput(input);
-  await databaseService.replaceFocusFormItems(parsedInput);
-};
+export const createProjectMilestones: DatabaseActivities['createProjectMilestones'] =
+  async (input) => {
+    const parsedInput = parseCreateProjectMilestonesInput(input);
+    await databaseService.createProjectMilestones(parsedInput);
+  };
 
-export const createMilestoneTasks = async (input: unknown): Promise<void> => {
-  const parsedInput = parseCreateMilestoneTasksInput(input);
-  await databaseService.createMilestoneTasks(parsedInput);
-};
+export const createMilestoneTasks: DatabaseActivities['createMilestoneTasks'] =
+  async (input) => {
+    const parsedInput = parseCreateMilestoneTasksInput(input);
+    await databaseService.createMilestoneTasks(parsedInput);
+  };

@@ -60,7 +60,7 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.get('/project-intake/questions', async (_req, res) => {
+app.get('/project-intake/questions', (_req, res) => {
   try {
     const form = PROJECT_INTAKE_FORM;
     return res.json({ form });
@@ -73,17 +73,24 @@ app.get('/project-intake/questions', async (_req, res) => {
   }
 });
 
-app.get('/focus-questions/:name', async (req, res) => {
+app.get('/projects/:projectId/focus-form', async (req, res) => {
+  const userId = TEST_USER_ID;
+  const projectId = req.params['projectId'];
+
+  if (!projectId) {
+    return res.status(400).json({ message: 'projectId is required' });
+  }
+
   try {
-    const form = await db.getFocusFormByName(req.params['name']);
-    if (!form) {
-      return res.status(404).json({ message: 'Focus questions not found' });
+    const focusForm = await db.getProjectFocusForm({ projectId, userId });
+    if (!focusForm) {
+      return res.status(404).json({ message: 'Focus form not found' });
     }
-    return res.json({ focusForm: form });
+    return res.json({ focusForm });
   } catch (error) {
-    console.error('Failed to fetch focus questions', error);
+    console.error('Failed to fetch focus form', error);
     return res.status(500).json({
-      message: 'Unable to load focus questions',
+      message: 'Unable to load focus form',
       error: (error as Error).message,
     });
   }

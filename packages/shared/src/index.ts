@@ -8,17 +8,17 @@ export type QuestionType = (typeof QUESTION_TYPE_VALUES)[number];
 export const TEST_USER_ID = 'test-user-id' as const;
 
 export const PROJECT_COMMITMENT_VALUES = [
-  'hours_1_3',
-  'hours_4_6',
-  'hours_7_10',
-  'hours_10_plus',
+  'light',
+  'moderate',
+  'heavy',
+  'dedicated',
 ] as const satisfies readonly [string, ...string[]];
 export type ProjectCommitment = (typeof PROJECT_COMMITMENT_VALUES)[number];
 
 export const PROJECT_FAMILIARITY_VALUES = [
-  'completely_new',
-  'some_experience',
-  'experienced_refining',
+  'beginner',
+  'intermediate',
+  'advanced',
 ] as const satisfies readonly [string, ...string[]];
 export type ProjectFamiliarity = (typeof PROJECT_FAMILIARITY_VALUES)[number];
 
@@ -31,19 +31,19 @@ export type ProjectWorkStyle = (typeof PROJECT_WORK_STYLE_VALUES)[number];
 
 // TODO: These options can be cleaned up or maybe become database level
 export const PROJECT_COMMITMENT_OPTIONS = [
-  { value: 'hours_1_3', label: '1-3 hours' },
-  { value: 'hours_4_6', label: '4-6 hours' },
-  { value: 'hours_7_10', label: '7-10 hours' },
-  { value: 'hours_10_plus', label: '10+ hours' },
+  { value: 'light', label: '1-4 hours' },
+  { value: 'moderate', label: '4-10 hours' },
+  { value: 'heavy', label: '10-20 hours' },
+  { value: 'dedicated', label: '20-40 hours' },
 ] as const satisfies ReadonlyArray<{
   value: ProjectCommitment;
   label: string;
 }>;
 
 export const PROJECT_FAMILIARITY_OPTIONS = [
-  { value: 'completely_new', label: 'Completely new' },
-  { value: 'some_experience', label: 'Some experience' },
-  { value: 'experienced_refining', label: 'Experienced / refining' },
+  { value: 'beginner', label: 'Completely new' },
+  { value: 'intermediate', label: 'Some experience' },
+  { value: 'advanced', label: 'Experienced / refining' },
 ] as const satisfies ReadonlyArray<{
   value: ProjectFamiliarity;
   label: string;
@@ -230,10 +230,27 @@ export interface CreateFormRecordInput {
 }
 
 export interface ReplaceFocusFormItemsInput {
-  // TODO: Should this just be projectId?
   formId: string;
   userId: string;
   items: CreateFocusItemInput[];
+}
+
+export interface FocusItemDto {
+  id: string;
+  question: string;
+  questionType: QuestionType;
+  options: string[];
+  position: number;
+  answer: string | null;
+  answeredAt: string | null;
+}
+
+export interface FocusFormDto {
+  id: string;
+  name: string;
+  projectId: string;
+  kind: 'focus_questions';
+  items: FocusItemDto[];
 }
 
 export interface MilestoneDto {
@@ -350,4 +367,70 @@ export interface ProjectContextProjectDto extends ProjectDto {
 
 export interface ProjectContextDto {
   project: ProjectContextProjectDto;
+}
+
+// --- AI Activity Output Types ---
+
+export interface FocusQuestionOutput {
+  id: string;
+  prompt: string;
+  questionType: QuestionType;
+  options: string[];
+  position: number;
+}
+
+export interface FocusQuestionsOutput {
+  questions: FocusQuestionOutput[];
+}
+
+export interface ProjectOutlineMilestone {
+  title: string;
+  description: string;
+}
+
+export interface ProjectOutlineOutput {
+  milestones: ProjectOutlineMilestone[];
+}
+
+export interface MilestoneTaskOutput {
+  day: number;
+  title: string;
+  objective: string;
+  body: string;
+  estimatedMinutes: number;
+}
+
+export interface MilestoneTasksOutput {
+  tasks: MilestoneTaskOutput[];
+}
+
+// --- Activity Interfaces (used by proxyActivities in workflows) ---
+
+export interface DatabaseActivities {
+  getProjectFocusForm(input: GetProjectInput): Promise<FocusFormDto | null>;
+  createFocusForm(input: CreateFormRecordInput): Promise<FormRecordDto>;
+  replaceFocusFormItems(input: ReplaceFocusFormItemsInput): Promise<void>;
+  createProjectMilestones(input: CreateProjectMilestonesInput): Promise<void>;
+  createMilestoneTasks(input: CreateMilestoneTasksInput): Promise<void>;
+}
+
+export interface AIActivities {
+  generateFocusQuestions(
+    input: FocusQuestionsContextInput,
+  ): Promise<FocusQuestionsOutput>;
+  generateProjectOutline(input: {
+    project: ProjectDto;
+  }): Promise<ProjectOutlineOutput>;
+  generateTasksForMilestone(input: {
+    project: ProjectDto;
+    milestone: MilestoneDto;
+  }): Promise<MilestoneTasksOutput>;
+}
+
+// --- Workflow Input Types ---
+
+export interface GenerateProjectRoadmapInput {
+  userId: string;
+  project: ProjectDto;
+  intakeAnswers: ProjectIntakeAnswers;
 }

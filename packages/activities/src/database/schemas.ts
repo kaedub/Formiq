@@ -22,8 +22,27 @@ export const formRecordSchema = z.object({
   kind: formRecordKindSchema,
 });
 
-export const getFocusFormByNameInputSchema = z.object({
-  name: z.string().min(1, 'name is required'),
+export const getProjectFocusFormInputSchema = z.object({
+  userId: userIdSchema,
+  projectId: projectIdSchema,
+});
+
+export const focusItemDtoSchema = z.object({
+  id: idSchema,
+  question: z.string().min(1),
+  questionType: z.enum(QUESTION_TYPE_VALUES),
+  options: z.array(z.string()),
+  position: z.number().int().nonnegative(),
+  answer: z.string().nullable(),
+  answeredAt: z.string().nullable(),
+});
+
+export const focusFormDtoSchema = z.object({
+  id: idSchema,
+  name: z.string().min(1),
+  projectId: projectIdSchema,
+  kind: z.literal('focus_questions'),
+  items: z.array(focusItemDtoSchema),
 });
 
 export const createFormRecordInputSchema = z

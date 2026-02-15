@@ -142,7 +142,7 @@ describe('PrismaDatabaseService integration', () => {
     });
   });
 
-  it('creates a focus form with items and fetches it by name', async () => {
+  it('creates a focus form with items and retrieves it via getProjectFocusForm', async () => {
     const formName = `intake-${randomUUID()}`;
     const user = await createTestUser(prisma);
     const project = await service.createProject(buildProjectInput(user.id));
@@ -171,20 +171,20 @@ describe('PrismaDatabaseService integration', () => {
     expect(created.name).toBe(formName);
     expect(created.projectId).toBe(project.id);
 
-    const fetched = await service.getFocusFormByName(formName);
+    const fetched = await service.getProjectFocusForm({
+      projectId: project.id,
+      userId: user.id,
+    });
+    expect(fetched).not.toBeNull();
     expect(fetched?.id).toBe(created.id);
     expect(fetched?.projectId).toBe(project.id);
-
-    const items = await prisma.focusItem.findMany({
-      where: { formId: created.id },
-      orderBy: { position: 'asc' },
-    });
-    expect(items).toHaveLength(2);
-    expect(items[0]?.question).toBe('What is your goal?');
-    expect(items[0]?.answer).toBeNull();
-    expect(items[0]?.answeredAt).toBeNull();
-    expect(items[1]?.question).toBe('Pick a focus area');
-    expect(items[1]?.options).toEqual(['frontend', 'backend']);
+    expect(fetched?.kind).toBe('focus_questions');
+    expect(fetched?.items).toHaveLength(2);
+    expect(fetched?.items[0]?.question).toBe('What is your goal?');
+    expect(fetched?.items[0]?.answer).toBeNull();
+    expect(fetched?.items[0]?.answeredAt).toBeNull();
+    expect(fetched?.items[1]?.question).toBe('Pick a focus area');
+    expect(fetched?.items[1]?.options).toEqual(['frontend', 'backend']);
   });
 
   it('creates a focus form with an empty items array', async () => {
@@ -258,8 +258,42 @@ describe('PrismaDatabaseService integration', () => {
     expect(items[1]?.question).toBe('Replaced question 2');
   });
 
-  it('returns null when fetching missing focus questions', async () => {
-    const result = await service.getFocusFormByName('missing_intake_form');
+  it('returns null when project has no focus form', async () => {
+    const user = await createTestUser(prisma);
+    const project = await service.createProject(buildProjectInput(user.id));
+
+    const result = await service.getProjectFocusForm({
+      projectId: project.id,
+      userId: user.id,
+    });
+
+    expect(result).toBeNull();
+  });
+
+  it('returns null when userId does not own the project', async () => {
+    const owner = await createTestUser(prisma);
+    const intruder = await createTestUser(prisma);
+    const project = await service.createProject(buildProjectInput(owner.id));
+
+    await service.createFocusForm({
+      name: `form-${randomUUID()}`,
+      projectId: project.id,
+      userId: owner.id,
+      kind: 'focus_questions',
+      items: [
+        {
+          question: 'Test question',
+          questionType: 'free_text',
+          options: [],
+          position: 0,
+        },
+      ],
+    });
+
+    const result = await service.getProjectFocusForm({
+      projectId: project.id,
+      userId: intruder.id,
+    });
 
     expect(result).toBeNull();
   });

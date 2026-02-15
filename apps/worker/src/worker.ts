@@ -7,7 +7,7 @@ import {
   generateFocusQuestions,
   generateProjectOutline,
   generateTasksForMilestone,
-  getFocusFormByName,
+  getProjectFocusForm,
 } from '@formiq/activities';
 import { NativeConnection, Worker } from '@temporalio/worker';
 
@@ -46,7 +46,7 @@ const run = async (): Promise<void> => {
     namespace,
     taskQueue: 'database',
     activities: {
-      getFocusFormByName,
+      getProjectFocusForm,
       createFocusForm,
       createProjectMilestones,
       createMilestoneTasks,

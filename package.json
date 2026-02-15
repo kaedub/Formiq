@@ -23,6 +23,7 @@
     "db:wipe": "yarn prisma db wipe --force",
     "db:migrate": "yarn prisma migrate dev --name",
     "worker:run": "nx run worker:run",
+    "workflow": "tsx scripts/client.ts",
     "precommit": "yarn db:generate && yarn build && yarn format && yarn lint",
     "prepare": "husky"
   },

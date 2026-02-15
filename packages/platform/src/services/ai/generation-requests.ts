@@ -34,7 +34,7 @@ import type {
 } from '@formiq/shared';
 
 type FocusQuestionsUserContext = FocusQuestionsContextInput;
-type EffortLevel = 'beginner' | 'intermediate' | 'experienced';
+type EffortLevel = 'beginner' | 'intermediate' | 'advanced';
 type FocusQuestionsPromptContext = {
   goal: string;
   time_per_week: number;
@@ -45,16 +45,16 @@ type FocusQuestionsPromptContext = {
 };
 
 const commitmentHoursMap: Record<ProjectCommitment, number> = {
-  hours_1_3: 2,
-  hours_4_6: 5,
-  hours_7_10: 8,
-  hours_10_plus: 12,
+  light: 2,
+  moderate: 8,
+  heavy: 20,
+  dedicated: 40,
 };
 
 const familiarityEffortLevelMap: Record<ProjectFamiliarity, EffortLevel> = {
-  completely_new: 'beginner',
-  some_experience: 'intermediate',
-  experienced_refining: 'experienced',
+  beginner: 'beginner',
+  intermediate: 'intermediate',
+  advanced: 'advanced',
 };
 
 const workStyleLabelMap: Record<ProjectWorkStyle, string> = {

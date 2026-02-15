@@ -1,10 +1,13 @@
 import type {
   FocusForm as FocusFormModel,
+  FocusItem as FocusItemModel,
   Milestone as MilestoneModel,
   Project as ProjectModel,
   Task as TaskModel,
 } from '@prisma/client';
 import type {
+  FocusFormDto,
+  FocusItemDto,
   FormRecordDto,
   MilestoneDto,
   ProjectDto,
@@ -61,4 +64,24 @@ export const mapFormRecordDto = (form: FocusFormModel): FormRecordDto => ({
   name: form.name,
   projectId: form.projectId,
   kind: 'focus_questions',
+});
+
+export const mapFocusItemDto = (item: FocusItemModel): FocusItemDto => ({
+  id: item.id,
+  question: item.question,
+  questionType: item.questionType,
+  options: item.options,
+  position: item.position,
+  answer: item.answer,
+  answeredAt: item.answeredAt ? item.answeredAt.toISOString() : null,
+});
+
+export type FocusFormWithItems = FocusFormModel & { items: FocusItemModel[] };
+
+export const mapFocusFormDto = (form: FocusFormWithItems): FocusFormDto => ({
+  id: form.id,
+  name: form.name,
+  projectId: form.projectId,
+  kind: 'focus_questions',
+  items: form.items.map(mapFocusItemDto),
 });

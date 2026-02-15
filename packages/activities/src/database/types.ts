@@ -3,30 +3,32 @@ import type {
   CreateMilestoneTasksInput,
   CreateProjectMilestonesInput,
   ReplaceFocusFormItemsInput,
+  GetProjectInput,
+  FocusFormDto,
   FormRecordDto,
 } from '@formiq/shared';
-import type { z } from 'zod';
 import {
   createFormRecordInputSchema,
   createMilestoneTasksInputSchema,
   createProjectMilestonesInputSchema,
   replaceFocusFormItemsInputSchema,
+  getProjectFocusFormInputSchema,
+  focusFormDtoSchema,
   formRecordSchema,
-  getFocusFormByNameInputSchema,
 } from './schemas.js';
 
-export type GetFocusFormByNameInput = z.infer<
-  typeof getFocusFormByNameInputSchema
->;
 export type CreateFocusFormInput = CreateFormRecordInput;
 export type CreateProjectMilestonesInputValidated =
   CreateProjectMilestonesInput;
 export type CreateMilestoneTasksInputValidated = CreateMilestoneTasksInput;
 export type FocusFormRecord = FormRecordDto;
 
-export const parseGetFocusFormByNameInput = (
+export const parseGetProjectFocusFormInput = (
   input: unknown,
-): GetFocusFormByNameInput => getFocusFormByNameInputSchema.parse(input);
+): GetProjectInput => getProjectFocusFormInputSchema.parse(input);
+
+export const parseFocusFormDto = (value: unknown): FocusFormDto =>
+  focusFormDtoSchema.parse(value);
 
 export const parseCreateFormRecordInput = (
   input: unknown,

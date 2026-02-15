@@ -1,6 +1,5 @@
 import { MilestoneStatus, TaskStatus, type PrismaClient } from '@prisma/client';
 import type { DatabaseService, DatabaseServiceDependencies } from './types.js';
-import { PROJECT_INTAKE_FORM } from '@formiq/shared';
 import type {
   CreateMilestoneTasksInput,
   CreateProjectInput,
@@ -10,13 +9,14 @@ import type {
   ProjectSummaryDto,
   GetProjectInput,
   FormRecordDto,
+  FocusFormDto,
   CreateFormRecordInput,
   ReplaceFocusFormItemsInput,
-  FormDefinition,
 } from '@formiq/shared';
 import {
   mapMilestoneDto,
   mapFormRecordDto,
+  mapFocusFormDto,
   mapProjectDto,
   mapTaskDto,
 } from './mappers.js';
@@ -97,12 +97,24 @@ class PrismaDatabaseService implements DatabaseService {
     }));
   }
 
-  async getFocusFormByName(name: string): Promise<FormRecordDto | null> {
-    const form = await this.db.focusForm.findUnique({
-      where: { name },
+  async getProjectFocusForm({
+    projectId,
+    userId,
+  }: GetProjectInput): Promise<FocusFormDto | null> {
+    const project = await this.db.project.findFirst({
+      where: { id: projectId, userId },
+      include: {
+        focusForm: {
+          include: { items: { orderBy: { position: 'asc' } } },
+        },
+      },
     });
 
-    return form ? mapFormRecordDto(form) : null;
+    if (!project?.focusForm) {
+      return null;
+    }
+
+    return mapFocusFormDto(project.focusForm);
   }
 
   async createFocusForm(input: CreateFormRecordInput): Promise<FormRecordDto> {
