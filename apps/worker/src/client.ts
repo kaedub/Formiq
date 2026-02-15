@@ -105,7 +105,11 @@ const run = async (): Promise<void> => {
 
   console.log('Project Details', projectDetails);
 
-  let milestone = projectDetails.milestones[0]!;
+  const firstMilestone = projectDetails.milestones[0];
+  if (!firstMilestone) {
+    throw new Error('Project has no milestones');
+  }
+  const milestone = firstMilestone;
 
   const { tasks } = await aiService.generateTasksForMilestone({
     project,
@@ -139,7 +143,7 @@ const run = async (): Promise<void> => {
     tasks: tasksInput,
   });
 
-  const finalState = await databaseService.getProjectDetails({
+  await databaseService.getProjectDetails({
     userId: TEST_USER_ID,
     projectId: project.id,
   });

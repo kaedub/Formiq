@@ -89,7 +89,11 @@ app.get('/focus-questions/:name', async (req, res) => {
 });
 
 app.post('/projects/start', async (req, res) => {
-  const { goal: goalRaw, commitment, familiarity, workStyle } = req.body ?? {};
+  const body = (req.body ?? {}) as Record<string, unknown>;
+  const goalRaw = body['goal'];
+  const commitment = body['commitment'];
+  const familiarity = body['familiarity'];
+  const workStyle = body['workStyle'];
   if (typeof goalRaw !== 'string' || goalRaw.trim().length === 0) {
     return res.status(400).json({ message: 'goal is required' });
   }
@@ -181,7 +185,9 @@ app.get('/projects/:projectId', async (req, res) => {
 });
 
 app.post('/projects', async (req, res) => {
-  const { title, responses } = req.body ?? {};
+  const body = (req.body ?? {}) as Record<string, unknown>;
+  const title = body['title'];
+  const responses = body['responses'];
   const userId = TEST_USER_ID;
   if (typeof title !== 'string' || title.trim().length === 0) {
     return res.status(400).json({ message: 'title is required' });

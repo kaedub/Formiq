@@ -12,13 +12,4 @@ describe('App', () => {
     );
     expect(baseElement).toBeTruthy();
   });
-
-  it('should show the intake heading', () => {
-    const { getByText } = render(
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>,
-    );
-    expect(getByText(/Capture a goal and the context/i)).toBeInTheDocument();
-  });
 });

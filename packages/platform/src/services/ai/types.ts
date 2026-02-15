@@ -2,9 +2,9 @@ import type OpenAI from 'openai';
 import { z } from 'zod';
 import type { MilestoneDto, ProjectDto } from '@formiq/shared';
 import {
-  formDefinitionSchema,
-  projectMilestoneSchema,
-  projectPlanSchema,
+  focusQuestionsFormSchema,
+  projectOutlineMilestoneSchema,
+  projectOutlineSchema,
   milestoneTasksSchema,
   taskSchema,
 } from './schemas.js';
@@ -14,13 +14,15 @@ export type AIServiceDependencies = {
   client: OpenAI;
 };
 
-export type FocusQuestionsDefinition = z.infer<typeof formDefinitionSchema>;
+export type FocusQuestionsDefinition = z.infer<typeof focusQuestionsFormSchema>;
 
-export type ProjectOutlineMilestone = z.infer<typeof projectMilestoneSchema>;
+export type ProjectOutlineMilestone = z.infer<
+  typeof projectOutlineMilestoneSchema
+>;
 
-export type ProjectOutline = z.infer<typeof projectPlanSchema>;
+export type ProjectOutline = z.infer<typeof projectOutlineSchema>;
 
-export type GeneratedTask = z.infer<typeof taskSchema>;
+export type Task = z.infer<typeof taskSchema>;
 
 export type MilestoneTasks = z.infer<typeof milestoneTasksSchema>;
 

@@ -1,9 +1,4 @@
 import { z } from 'zod';
-import type {
-  FocusQuestionsContextInput,
-  MilestoneDto,
-  ProjectDto,
-} from '@formiq/shared';
 import {
   PROJECT_COMMITMENT_VALUES,
   PROJECT_FAMILIARITY_VALUES,

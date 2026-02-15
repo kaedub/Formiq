@@ -18,7 +18,7 @@ export interface FocusQuestion {
 interface FocusQuestionsFormProps {
   questions: FocusQuestion[];
   responses: Record<string, string[]>;
-  onChange(questionId: string, values: string[]): void;
+  onChange(this: void, questionId: string, values: string[]): void;
 }
 
 export const FocusQuestionsForm = ({
@@ -87,7 +87,7 @@ export const FocusQuestionsForm = ({
                           type="checkbox"
                           value={option.value}
                           checked={isSelected}
-                          onChange={(event) => {
+                          onChange={() => {
                             const nextValues = isSelected
                               ? currentResponse.filter(
                                   (value) => value !== option.value,

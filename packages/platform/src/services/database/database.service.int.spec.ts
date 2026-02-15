@@ -14,7 +14,7 @@ describe('PrismaDatabaseService integration', () => {
   let prisma: PrismaClient;
   let service: DatabaseService;
 
-  beforeAll(async () => {
+  beforeAll(() => {
     prisma = getPrismaClient();
     service = createDatabaseService({ db: prisma });
   });

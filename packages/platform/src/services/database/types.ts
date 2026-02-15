@@ -6,7 +6,6 @@ import type {
   FormRecordDto,
   CreateFormRecordInput,
   FormDefinition,
-  MilestoneDto,
   ProjectContextDto,
   ProjectDto,
   ProjectSummaryDto,

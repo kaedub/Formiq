@@ -17,11 +17,11 @@ interface IntakeFormProps {
   isReadyToSubmit: boolean;
   status: string | null;
   fetchError: string | null;
-  onGoalChange(value: string): void;
-  onCommitmentChange(value: ProjectCommitment): void;
-  onFamiliarityChange(value: ProjectFamiliarity): void;
-  onWorkStyleChange(value: ProjectWorkStyle): void;
-  onSubmit(event: React.FormEvent<HTMLFormElement>): void;
+  onGoalChange(this: void, value: string): void;
+  onCommitmentChange(this: void, value: ProjectCommitment): void;
+  onFamiliarityChange(this: void, value: ProjectFamiliarity): void;
+  onWorkStyleChange(this: void, value: ProjectWorkStyle): void;
+  onSubmit(this: void, event: React.FormEvent<HTMLFormElement>): void;
 }
 
 export const IntakeForm = ({

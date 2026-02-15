@@ -6,7 +6,7 @@ const questionTypeSchema = z.enum([
   'multi_select',
 ]);
 
-export const formQuestionSchema = z
+export const focusQuestionSchema = z
   .object({
     id: z.string().min(1),
     prompt: z.string().min(1),
@@ -16,9 +16,9 @@ export const formQuestionSchema = z
   })
   .strict();
 
-export const formDefinitionSchema = z
+export const focusQuestionsFormSchema = z
   .object({
-    questions: z.array(formQuestionSchema),
+    questions: z.array(focusQuestionSchema),
   })
   .strict();
 
@@ -40,16 +40,16 @@ export const projectContextSchema = z
   })
   .strict();
 
-export const projectMilestoneSchema = z
+export const projectOutlineMilestoneSchema = z
   .object({
     title: z.string().min(1),
     description: z.string().min(1),
   })
   .strict();
 
-export const projectPlanSchema = z
+export const projectOutlineSchema = z
   .object({
-    milestones: z.array(projectMilestoneSchema),
+    milestones: z.array(projectOutlineMilestoneSchema),
   })
   .strict();
 
@@ -90,6 +90,6 @@ export const milestoneTaskContextSchema = z
 //   'project_context',
 // );
 
-// export const PROJECT_PLAN_JSON_SCHEMA: JsonSchema = toJsonSchema(projectPlanSchema, 'project_plan');
+// export const PROJECT_OUTLINE_JSON_SCHEMA: JsonSchema = toJsonSchema(projectOutlineSchema, 'project_outline');
 
 // export const TASK_SCHEDULE_JSON_SCHEMA: JsonSchema = toJsonSchema(taskScheduleSchema, 'task_schedule');

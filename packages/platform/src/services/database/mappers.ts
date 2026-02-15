@@ -28,7 +28,7 @@ export const mapProjectDto = (project: ProjectWithResponses): ProjectDto => {
 };
 
 export const mapMilestoneDto = (milestone: MilestoneModel): MilestoneDto => {
-  const generatedAt = milestone.generatedAt ?? new Date();
+  const generatedAt = milestone.generatedAt;
   const dto: MilestoneDto = {
     id: milestone.id,
     projectId: milestone.projectId,
@@ -42,7 +42,7 @@ export const mapMilestoneDto = (milestone: MilestoneModel): MilestoneDto => {
 };
 
 export const mapTaskDto = (task: TaskModel): TaskDto => {
-  const generatedAt = task.generatedAt ?? new Date();
+  const generatedAt = task.generatedAt;
   const dto: TaskDto = {
     id: task.id,
     milestoneId: task.milestoneId,

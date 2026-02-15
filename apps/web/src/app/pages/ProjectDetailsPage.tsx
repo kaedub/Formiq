@@ -32,7 +32,7 @@ export function ProjectDetailsPage(): JSX.Element {
           project: ProjectContextProjectDto;
         };
         setProject(data.project);
-      } catch (err) {
+      } catch {
         setError('Unable to load project details. Please try again.');
         setProject(null);
       } finally {

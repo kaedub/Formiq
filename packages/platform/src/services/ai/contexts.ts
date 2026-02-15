@@ -4,7 +4,7 @@ import {
   milestoneContextSchema,
   milestoneTaskContextSchema,
   projectContextSchema,
-  projectPlanSchema,
+  projectOutlineSchema,
 } from './schemas.js';
 
 export interface PromptContext<ContextJson> {
@@ -13,7 +13,7 @@ export interface PromptContext<ContextJson> {
 
 export type ProjectContextJson = z.infer<typeof projectContextSchema>;
 
-export type ProjectOutlineJson = z.infer<typeof projectPlanSchema>;
+export type ProjectOutlineJson = z.infer<typeof projectOutlineSchema>;
 
 export type MilestoneContextJson = z.infer<typeof milestoneContextSchema>;
 

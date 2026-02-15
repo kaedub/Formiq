@@ -20,7 +20,7 @@ export function HomePage(): JSX.Element {
       }
       const data = (await res.json()) as { projects: ProjectSummaryDto[] };
       setProjects(data.projects);
-    } catch (err) {
+    } catch {
       setProjects([]);
       setError('Unable to load projects right now. Please try again.');
     } finally {

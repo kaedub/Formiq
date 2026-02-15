@@ -23,8 +23,8 @@ import {
 class PrismaDatabaseService implements DatabaseService {
   constructor(private readonly db: PrismaClient) {}
 
-  async getProjectIntakeForm(): Promise<FormDefinition> {
-    return PROJECT_INTAKE_FORM;
+  getProjectIntakeForm(): Promise<FormDefinition> {
+    return Promise.resolve(PROJECT_INTAKE_FORM);
   }
 
   async getProject({

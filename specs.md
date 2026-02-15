@@ -115,7 +115,7 @@ General Intake V1
   - Purpose: Stage 2 – generate `project_plan` JSON from `project_context`.
   - Domain input: `ProjectContext` (or its JSON).
   - Input: `project_context` JSON.
-  - Output: `project_plan` JSON validated locally (e.g., `projectPlanSchema`).
+  - Output: `project_plan` JSON validated locally (e.g., `projectOutlineSchema`).
   - Responsibilities:
     - Build the JSON payload handed to the model (usually the `project_context`).
     - Construct the user prompt including:

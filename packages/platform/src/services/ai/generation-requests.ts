@@ -1,7 +1,3 @@
-import type {
-  MilestoneTaskContextJson,
-  ProjectContextJson,
-} from './contexts.js';
 import {
   MilestoneContext,
   MilestoneTaskContext,
@@ -14,15 +10,20 @@ import {
   TASK_GENERATION_PROMPT,
 } from './constants.js';
 import {
-  formDefinitionSchema,
+  focusQuestionsFormSchema,
   projectContextSchema,
-  projectPlanSchema,
+  projectOutlineSchema,
   milestoneTaskContextSchema,
   milestoneTasksSchema,
 } from './schemas.js';
 import type z from 'zod';
 import type OpenAI from 'openai';
 import { zodTextFormat } from 'openai/helpers/zod.js';
+import type {
+  FocusQuestionsDefinition,
+  MilestoneTasks,
+  ProjectOutline,
+} from './types.js';
 import type {
   FocusQuestionsContextInput,
   MilestoneDto,
@@ -65,7 +66,8 @@ const workStyleLabelMap: Record<ProjectWorkStyle, string> = {
 interface GenerationRequest<
   Context,
   InputSchema extends z.ZodTypeAny | null,
-  OutputSchema extends z.ZodTypeAny,
+  Output,
+  OutputSchema extends z.ZodType<Output>,
 > {
   name: string;
   model: string;
@@ -75,14 +77,15 @@ interface GenerationRequest<
   inputSchema: InputSchema;
   outputSchema: OutputSchema;
   buildUserPrompt(): string;
-  execute(): Promise<z.infer<OutputSchema>>;
+  execute(): Promise<Output>;
 }
 
 abstract class BaseGenerationRequest<
   Context,
   InputSchema extends z.ZodTypeAny | null,
-  OutputSchema extends z.ZodTypeAny,
-> implements GenerationRequest<Context, InputSchema, OutputSchema> {
+  Output,
+  OutputSchema extends z.ZodType<Output>,
+> implements GenerationRequest<Context, InputSchema, Output, OutputSchema> {
   abstract name: string;
   abstract model: string;
   abstract systemPrompt: string;
@@ -98,7 +101,7 @@ abstract class BaseGenerationRequest<
 
   abstract buildUserPrompt(): string;
 
-  async execute(): Promise<z.infer<OutputSchema>> {
+  async execute(): Promise<Output> {
     const response = await this.client.responses.parse({
       model: this.model,
       input: [
@@ -107,21 +110,22 @@ abstract class BaseGenerationRequest<
       ],
       text: { format: zodTextFormat(this.outputSchema, this.name) },
     });
-    return response.output_parsed as z.infer<OutputSchema>;
+    return this.outputSchema.parse(response.output_parsed);
   }
 }
 
 export class FocusQuestionsRequest extends BaseGenerationRequest<
   FocusQuestionsUserContext,
   null,
-  typeof formDefinitionSchema
+  FocusQuestionsDefinition,
+  typeof focusQuestionsFormSchema
 > {
   name = 'focus_questions';
   model = DEFAULT_MODEL;
   systemPrompt = INTAKE_FORM_PROMPT;
   description = 'FormIQ focus questions payload';
   inputSchema = null;
-  outputSchema = formDefinitionSchema;
+  outputSchema = focusQuestionsFormSchema;
   context: FocusQuestionsUserContext;
 
   constructor(client: OpenAI, context: FocusQuestionsUserContext) {
@@ -156,14 +160,15 @@ export class FocusQuestionsRequest extends BaseGenerationRequest<
 export class ProjectOutlineGenerationRequest extends BaseGenerationRequest<
   ProjectContext,
   typeof projectContextSchema,
-  typeof projectPlanSchema
+  ProjectOutline,
+  typeof projectOutlineSchema
 > {
   name = 'project_outline';
   model = DEFAULT_MODEL;
   systemPrompt = PROJECT_PLAN_PROMPT;
   description = 'FormIQ project outline payload';
   inputSchema = projectContextSchema;
-  outputSchema = projectPlanSchema;
+  outputSchema = projectOutlineSchema;
   context: ProjectContext;
 
   constructor(client: OpenAI, project: ProjectDto) {
@@ -171,12 +176,8 @@ export class ProjectOutlineGenerationRequest extends BaseGenerationRequest<
     this.context = new ProjectContext(project);
   }
 
-  toJSON(): ProjectContextJson {
-    return this.context.toJSON();
-  }
-
   buildUserPrompt(): string {
-    const projectContextPayload = this.toJSON();
+    const projectContextPayload = this.context.toJSON();
     return [
       `PROJECT_CONTEXT_JSON_SCHEMA: ${JSON.stringify(this.inputSchema, null, 2)}`,
       `PROJECT_PLAN_JSON_SCHEMA: ${JSON.stringify(this.outputSchema, null, 2)}`,
@@ -189,6 +190,7 @@ export class ProjectOutlineGenerationRequest extends BaseGenerationRequest<
 export class TaskGenerationRequest extends BaseGenerationRequest<
   MilestoneTaskContext,
   typeof milestoneTaskContextSchema,
+  MilestoneTasks,
   typeof milestoneTasksSchema
 > {
   name = 'task_schedule';
