@@ -3,6 +3,7 @@ import type {
   FocusItem as FocusItemModel,
   Milestone as MilestoneModel,
   Project as ProjectModel,
+  PromptExecution as PromptExecutionModel,
   Task as TaskModel,
 } from '@prisma/client';
 import type {
@@ -11,6 +12,7 @@ import type {
   FormRecordDto,
   MilestoneDto,
   ProjectDto,
+  PromptExecutionDto,
   TaskDto,
 } from '@formiq/shared';
 
@@ -88,3 +90,37 @@ export const mapFocusFormDto = (form: FocusFormWithItems): FocusFormDto => ({
   kind: 'focus_questions',
   items: form.items.map(mapFocusItemDto),
 });
+
+export const mapPromptExecutionDto = (
+  execution: PromptExecutionModel,
+): PromptExecutionDto => {
+  const dto: PromptExecutionDto = {
+    id: execution.id,
+    projectId: execution.projectId,
+    stage: execution.stage,
+    status: execution.status,
+    input: execution.input,
+    createdAt: execution.createdAt.toISOString(),
+  };
+
+  if (execution.milestoneId !== null) {
+    dto.milestoneId = execution.milestoneId;
+  }
+  if (execution.taskId !== null) {
+    dto.taskId = execution.taskId;
+  }
+  if (execution.templateId !== null) {
+    dto.templateId = execution.templateId;
+  }
+  if (execution.output !== null) {
+    dto.output = execution.output;
+  }
+  if (execution.model !== null) {
+    dto.model = execution.model;
+  }
+  if (execution.metadata !== null) {
+    dto.metadata = execution.metadata;
+  }
+
+  return dto;
+};

@@ -7,6 +7,7 @@ import type {
   FocusFormDto,
   CreateFormRecordInput,
   ReplaceFocusFormItemsInput,
+  SubmitFocusResponsesInput,
   ProjectContextDto,
   ProjectDto,
   ProjectSummaryDto,
@@ -27,4 +28,7 @@ export interface DatabaseService {
   createProject(input: CreateProjectInput): Promise<ProjectDto>;
   createProjectMilestones(input: CreateProjectMilestonesInput): Promise<void>;
   createMilestoneTasks(input: CreateMilestoneTasksInput): Promise<void>;
+  submitFocusResponses(
+    input: SubmitFocusResponsesInput & { projectId: string; userId: string },
+  ): Promise<void>;
 }

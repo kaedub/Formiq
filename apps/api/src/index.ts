@@ -1,5 +1,6 @@
 import cors from 'cors';
 import express from 'express';
+import { Client, Connection } from '@temporalio/client';
 import {
   createAIService,
   createDatabaseService,
@@ -7,13 +8,18 @@ import {
   getPrismaClient,
 } from '@formiq/platform';
 import {
-  PROJECT_INTAKE_FORM,
   TEST_USER_ID,
   isProjectCommitment,
   isProjectFamiliarity,
   isProjectWorkStyle,
 } from '@formiq/shared';
-import type { QuestionResponseInput } from '@formiq/shared';
+import type {
+  GenerateProjectRoadmapInput,
+  SubmitFocusResponsesInput,
+} from '@formiq/shared';
+
+const TEMPORAL_ADDRESS = process.env['TEMPORAL_ADDRESS'] ?? 'localhost:7233';
+const TEMPORAL_NAMESPACE = process.env['TEMPORAL_NAMESPACE'] ?? 'default';
 
 const app = express();
 app.use(cors());
@@ -22,35 +28,23 @@ app.use(express.json());
 const prisma = getPrismaClient();
 const db = createDatabaseService({ db: prisma });
 
-const client = getOpenAIClient();
-const ai = createAIService({ client });
+const openaiClient = getOpenAIClient();
+const ai = createAIService({ client: openaiClient });
 
-const normalizeResponses = (responses: unknown): QuestionResponseInput[] => {
-  if (!Array.isArray(responses)) {
-    throw new Error('responses must be an array');
+let temporalClient: Client | null = null;
+
+async function getTemporalClient(): Promise<Client> {
+  if (!temporalClient) {
+    const connection = await Connection.connect({
+      address: TEMPORAL_ADDRESS,
+    });
+    temporalClient = new Client({
+      connection,
+      namespace: TEMPORAL_NAMESPACE,
+    });
   }
-
-  return responses.map((response, index) => {
-    if (
-      typeof response !== 'object' ||
-      response === null ||
-      typeof (response as { questionId?: unknown }).questionId !== 'string'
-    ) {
-      throw new Error(`responses[${index}] is missing a questionId`);
-    }
-
-    const questionId = (response as { questionId: string }).questionId;
-    const rawValues = (response as { values?: unknown }).values;
-
-    const values =
-      Array.isArray(rawValues) &&
-      rawValues.every((entry) => typeof entry === 'string')
-        ? rawValues
-        : [];
-
-    return { questionId, values };
-  });
-};
+  return temporalClient;
+}
 
 app.get('/', (_req, res) => {
   res.send('Welcome to the Project Intake API');
@@ -58,101 +52,6 @@ app.get('/', (_req, res) => {
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
-});
-
-app.get('/project-intake/questions', (_req, res) => {
-  try {
-    const form = PROJECT_INTAKE_FORM;
-    return res.json({ form });
-  } catch (error) {
-    console.error('Failed to fetch project intake questions', error);
-    return res.status(500).json({
-      message: 'Unable to load project intake questions',
-      error: (error as Error).message,
-    });
-  }
-});
-
-app.get('/projects/:projectId/focus-form', async (req, res) => {
-  const userId = TEST_USER_ID;
-  const projectId = req.params['projectId'];
-
-  if (!projectId) {
-    return res.status(400).json({ message: 'projectId is required' });
-  }
-
-  try {
-    const focusForm = await db.getProjectFocusForm({ projectId, userId });
-    if (!focusForm) {
-      return res.status(404).json({ message: 'Focus form not found' });
-    }
-    return res.json({ focusForm });
-  } catch (error) {
-    console.error('Failed to fetch focus form', error);
-    return res.status(500).json({
-      message: 'Unable to load focus form',
-      error: (error as Error).message,
-    });
-  }
-});
-
-app.post('/projects/start', async (req, res) => {
-  const body = (req.body ?? {}) as Record<string, unknown>;
-  const goalRaw = body['goal'];
-  const commitment = body['commitment'];
-  const familiarity = body['familiarity'];
-  const workStyle = body['workStyle'];
-  if (typeof goalRaw !== 'string' || goalRaw.trim().length === 0) {
-    return res.status(400).json({ message: 'goal is required' });
-  }
-  if (!isProjectCommitment(commitment)) {
-    return res.status(400).json({ message: 'commitment is invalid' });
-  }
-  if (!isProjectFamiliarity(familiarity)) {
-    return res.status(400).json({ message: 'familiarity is invalid' });
-  }
-  if (!isProjectWorkStyle(workStyle)) {
-    return res.status(400).json({ message: 'workStyle is invalid' });
-  }
-
-  const goal = goalRaw.trim();
-  console.info('Received new project intake', {
-    goal,
-    commitment,
-    familiarity,
-    workStyle,
-  });
-
-  const project = await db.createProject({
-    userId: TEST_USER_ID,
-    title: goal,
-    commitment,
-    familiarity,
-    workStyle,
-    responses: [],
-  });
-
-  const focusQuestions = await ai.generateFocusQuestions({
-    goal,
-    commitment,
-    familiarity,
-    workStyle,
-  });
-
-  await db.createFocusForm({
-    name: `focus-questions-${Date.now()}`,
-    projectId: project.id,
-    userId: TEST_USER_ID,
-    kind: 'focus_questions',
-    items: focusQuestions.questions.map((question) => ({
-      question: question.prompt,
-      questionType: question.questionType,
-      options: question.options,
-      position: question.position,
-    })),
-  });
-
-  return res.json({ goal, focusQuestions, status: 'ok' });
 });
 
 app.get('/projects', async (_req, res) => {
@@ -191,14 +90,12 @@ app.get('/projects/:projectId', async (req, res) => {
 
 app.post('/projects', async (req, res) => {
   const body = (req.body ?? {}) as Record<string, unknown>;
-  const title = body['title'];
+  const goalRaw = body['goal'];
   const commitment = body['commitment'];
   const familiarity = body['familiarity'];
   const workStyle = body['workStyle'];
-  const responses = body['responses'];
-  const userId = TEST_USER_ID;
-  if (typeof title !== 'string' || title.trim().length === 0) {
-    return res.status(400).json({ message: 'title is required' });
+  if (typeof goalRaw !== 'string' || goalRaw.trim().length === 0) {
+    return res.status(400).json({ message: 'goal is required' });
   }
   if (!isProjectCommitment(commitment)) {
     return res.status(400).json({ message: 'commitment is invalid' });
@@ -210,23 +107,130 @@ app.post('/projects', async (req, res) => {
     return res.status(400).json({ message: 'workStyle is invalid' });
   }
 
+  const goal = goalRaw.trim();
+  console.info('Received new project intake', {
+    goal,
+    commitment,
+    familiarity,
+    workStyle,
+  });
+
   try {
-    const normalized = normalizeResponses(responses);
     const project = await db.createProject({
-      userId,
-      title: title.trim(),
+      userId: TEST_USER_ID,
+      title: goal,
       commitment,
       familiarity,
       workStyle,
-      responses: normalized,
+      responses: [],
     });
-    return res.json(project);
+
+    const focusQuestions = await ai.generateFocusQuestions({
+      goal,
+      commitment,
+      familiarity,
+      workStyle,
+    });
+
+    await db.createFocusForm({
+      name: `focus-questions-${Date.now()}`,
+      projectId: project.id,
+      userId: TEST_USER_ID,
+      kind: 'focus_questions',
+      items: focusQuestions.questions.map((question) => ({
+        question: question.prompt,
+        questionType: question.questionType,
+        options: question.options,
+        position: question.position,
+      })),
+    });
+
+    return res.status(201).json({ project });
   } catch (error) {
     console.error('Failed to create project', error);
     return res.status(500).json({
-      message: 'Unable to save project',
+      message: 'Unable to create project',
       error: (error as Error).message,
     });
+  }
+});
+
+app.put('/projects/:projectId/focus-responses', async (req, res) => {
+  const userId = TEST_USER_ID;
+  const projectId = req.params['projectId'];
+
+  if (!projectId) {
+    return res.status(400).json({ message: 'projectId is required' });
+  }
+
+  const body = (req.body ?? {}) as Record<string, unknown>;
+  const responses = body['responses'];
+
+  if (!Array.isArray(responses) || responses.length === 0) {
+    return res
+      .status(400)
+      .json({ message: 'responses must be a non-empty array' });
+  }
+
+  for (const response of responses) {
+    if (
+      typeof response !== 'object' ||
+      response === null ||
+      typeof (response as Record<string, unknown>)['focusItemId'] !==
+        'string' ||
+      typeof (response as Record<string, unknown>)['answer'] !== 'string'
+    ) {
+      return res.status(400).json({
+        message:
+          'Each response must have a focusItemId (string) and answer (string)',
+      });
+    }
+  }
+
+  try {
+    await db.submitFocusResponses({
+      projectId,
+      userId,
+      responses: responses as SubmitFocusResponsesInput['responses'],
+    });
+
+    const context = await db.getProjectDetails({ userId, projectId });
+    const { project: projectDto } = context;
+
+    const workflowInput: GenerateProjectRoadmapInput = {
+      userId,
+      project: projectDto,
+      intakeAnswers: {
+        goal: projectDto.title,
+        commitment: projectDto.commitment,
+        familiarity: projectDto.familiarity,
+        workStyle: projectDto.workStyle,
+      },
+    };
+
+    const temporal = await getTemporalClient();
+    await temporal.workflow.start('GenerateProjectRoadmap', {
+      taskQueue: 'workflow',
+      workflowId: `generate-roadmap-${projectId}`,
+      args: [workflowInput],
+    });
+
+    console.info(
+      `Started GenerateProjectRoadmap workflow for project ${projectId}`,
+    );
+
+    return res.json(context);
+  } catch (error) {
+    console.error('Failed to submit focus responses', error);
+    if (
+      error instanceof Error &&
+      error.message.toLowerCase().includes('not found')
+    ) {
+      return res.status(404).json({ message: error.message });
+    }
+    return res
+      .status(500)
+      .json({ message: 'Unable to submit focus responses' });
   }
 });
 

@@ -1,36 +1,44 @@
-import { useEffect, useMemo, useState, type JSX } from 'react';
+import { useMemo, useState, type JSX } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type {
-  FocusQuestionsDefinition,
-  FormDefinition,
-  FormOption,
   ProjectCommitment,
+  ProjectDto,
   ProjectFamiliarity,
   ProjectWorkStyle,
 } from '@formiq/shared';
+import { PROJECT_INTAKE_FORM } from '@formiq/shared';
 import { IntakeForm } from '../components/IntakeForm';
-import {
-  type FocusQuestion,
-  FocusQuestionsForm,
-} from '../components/FocusQuestionsForm';
-import { SubmittedGoal } from '../components/SubmittedGoal';
 import styles from '../app.module.css';
 import { API_BASE } from '../config';
 
+const intakeForm = PROJECT_INTAKE_FORM;
+
+const defaultCommitment =
+  (intakeForm.questions.find((q) => q.id === 'time_commitment')?.options[0]
+    ?.value as ProjectCommitment | undefined) ?? '';
+
+const defaultFamiliarity =
+  (intakeForm.questions.find((q) => q.id === 'familiarity')?.options[0]
+    ?.value as ProjectFamiliarity | undefined) ?? '';
+
+const defaultWorkStyle =
+  (intakeForm.questions.find((q) => q.id === 'work_style')?.options[0]
+    ?.value as ProjectWorkStyle | undefined) ?? '';
+
 export function StartProjectPage(): JSX.Element {
+  const navigate = useNavigate();
   const [goal, setGoal] = useState('');
-  const [commitment, setCommitment] = useState<ProjectCommitment | ''>('');
-  const [familiarity, setFamiliarity] = useState<ProjectFamiliarity | ''>('');
-  const [workStyle, setWorkStyle] = useState<ProjectWorkStyle | ''>('');
+  const [commitment, setCommitment] = useState<ProjectCommitment | ''>(
+    defaultCommitment,
+  );
+  const [familiarity, setFamiliarity] = useState<ProjectFamiliarity | ''>(
+    defaultFamiliarity,
+  );
+  const [workStyle, setWorkStyle] = useState<ProjectWorkStyle | ''>(
+    defaultWorkStyle,
+  );
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
-  const [submittedGoal, setSubmittedGoal] = useState<string | null>(null);
-  const [intakeForm, setIntakeForm] = useState<FormDefinition | null>(null);
-  const [focusQuestions, setFocusQuestions] =
-    useState<FocusQuestionsDefinition | null>(null);
-  const [focusResponses, setFocusResponses] = useState<
-    Record<string, string[]>
-  >({});
-  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const isReadyToSubmit = useMemo(
     () =>
@@ -39,110 +47,15 @@ export function StartProjectPage(): JSX.Element {
         commitment &&
         familiarity &&
         workStyle &&
-        intakeForm?.questions.length,
+        intakeForm.questions.length,
       ),
-    [goal, commitment, familiarity, workStyle, intakeForm],
+    [goal, commitment, familiarity, workStyle],
   );
-
-  useEffect(() => {
-    const loadQuestions = async (): Promise<void> => {
-      setFetchError(null);
-      try {
-        const res = await fetch(`${API_BASE}/project-intake/questions`);
-        if (!res.ok) {
-          throw new Error(`Failed to load intake questions: ${res.status}`);
-        }
-        const data = (await res.json()) as { form: FormDefinition };
-        setIntakeForm(data.form);
-
-        const commitmentQuestion = data.form.questions.find(
-          (question) => question.id === 'time_commitment',
-        );
-        const familiarityQuestion = data.form.questions.find(
-          (question) => question.id === 'familiarity',
-        );
-        const workStyleQuestion = data.form.questions.find(
-          (question) => question.id === 'work_style',
-        );
-
-        setCommitment(
-          (commitmentQuestion?.options[0]?.value as
-            | ProjectCommitment
-            | undefined) ?? '',
-        );
-        setFamiliarity(
-          (familiarityQuestion?.options[0]?.value as
-            | ProjectFamiliarity
-            | undefined) ?? '',
-        );
-        setWorkStyle(
-          (workStyleQuestion?.options[0]?.value as
-            | ProjectWorkStyle
-            | undefined) ?? '',
-        );
-      } catch (error) {
-        setFetchError(
-          error instanceof Error
-            ? error.message
-            : 'Unable to load intake questions.',
-        );
-        setIntakeForm(null);
-      }
-    };
-
-    void loadQuestions();
-  }, []);
-
-  const normalizedFocusQuestions = useMemo<FocusQuestion[] | null>(() => {
-    if (!focusQuestions) {
-      return null;
-    }
-
-    return focusQuestions.questions.map((question) => {
-      const options = (question.options as Array<FormOption | string>).map(
-        (option) =>
-          typeof option === 'string'
-            ? { value: option, label: option }
-            : option,
-      );
-
-      return {
-        id: question.id,
-        prompt: question.prompt,
-        questionType: question.questionType,
-        options,
-        position: question.position,
-        required: question.required,
-      };
-    });
-  }, [focusQuestions]);
-
-  useEffect(() => {
-    if (!normalizedFocusQuestions) {
-      setFocusResponses({});
-      return;
-    }
-
-    const initialResponses: Record<string, string[]> = {};
-    normalizedFocusQuestions.forEach((question) => {
-      if (
-        question.questionType === 'single_select' &&
-        question.options.length > 0
-      ) {
-        initialResponses[question.id] = [question.options[0].value];
-        return;
-      }
-      initialResponses[question.id] = [];
-    });
-    setFocusResponses(initialResponses);
-  }, [normalizedFocusQuestions]);
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
     setStatus(null);
-    setSubmittedGoal(null);
-    setFocusQuestions(null);
 
     const trimmed = goal.trim();
     if (!trimmed) {
@@ -158,7 +71,7 @@ export function StartProjectPage(): JSX.Element {
 
     try {
       setStatus('Building your context…');
-      const res = await fetch(`${API_BASE}/projects/start`, {
+      const res = await fetch(`${API_BASE}/projects`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -174,13 +87,8 @@ export function StartProjectPage(): JSX.Element {
         throw new Error(message || 'Failed to start project');
       }
 
-      setSubmittedGoal(trimmed);
-      setGoal('');
-      const payload = (await res.json()) as {
-        focusQuestions: FocusQuestionsDefinition;
-      };
-      setFocusQuestions(payload.focusQuestions);
-      setStatus('Focus questions are ready below.');
+      const payload = (await res.json()) as { project: ProjectDto };
+      navigate(`/projects/${payload.project.id}`);
     } catch (error) {
       setStatus(
         error instanceof Error
@@ -212,7 +120,7 @@ export function StartProjectPage(): JSX.Element {
           loading={loading}
           isReadyToSubmit={isReadyToSubmit}
           status={status}
-          fetchError={fetchError}
+          fetchError={null}
           onGoalChange={setGoal}
           onCommitmentChange={setCommitment}
           onFamiliarityChange={setFamiliarity}
@@ -220,27 +128,6 @@ export function StartProjectPage(): JSX.Element {
           onSubmit={submit}
         />
       </section>
-
-      {submittedGoal && <SubmittedGoal goal={submittedGoal} />}
-
-      {normalizedFocusQuestions && (
-        <section className={styles['panel']}>
-          <header className={styles['header']}>
-            <p className={styles['eyebrow']}>Focus Questions</p>
-            <h2 className={styles['title']}>Clarify your project</h2>
-            <p className={styles['lead']}>
-              Answer these next to refine your plan.
-            </p>
-          </header>
-          <FocusQuestionsForm
-            questions={normalizedFocusQuestions}
-            responses={focusResponses}
-            onChange={(questionId, values) =>
-              setFocusResponses((prev) => ({ ...prev, [questionId]: values }))
-            }
-          />
-        </section>
-      )}
     </main>
   );
 }

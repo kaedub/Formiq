@@ -12,12 +12,14 @@ import type {
   FocusFormDto,
   CreateFormRecordInput,
   ReplaceFocusFormItemsInput,
+  SubmitFocusResponsesInput,
 } from '@formiq/shared';
 import {
   mapMilestoneDto,
   mapFormRecordDto,
   mapFocusFormDto,
   mapProjectDto,
+  mapPromptExecutionDto,
   mapTaskDto,
 } from './mappers.js';
 
@@ -53,6 +55,9 @@ class PrismaDatabaseService implements DatabaseService {
             tasks: true,
           },
         },
+        focusForm: {
+          include: { items: { orderBy: { position: 'asc' } } },
+        },
         promptExecutions: true,
         events: true,
       },
@@ -67,11 +72,19 @@ class PrismaDatabaseService implements DatabaseService {
       ...mapMilestoneDto(milestone),
       tasks: milestone.tasks.map(mapTaskDto),
     }));
+    const focusForm = project.focusForm
+      ? mapFocusFormDto(project.focusForm)
+      : null;
+    const promptExecutions = project.promptExecutions.map(
+      mapPromptExecutionDto,
+    );
 
     return {
       project: {
         ...projectDto,
         milestones,
+        focusForm,
+        promptExecutions,
       },
     };
   }
@@ -281,6 +294,55 @@ class PrismaDatabaseService implements DatabaseService {
         status: TaskStatus.locked,
       })),
     });
+  }
+
+  async submitFocusResponses(
+    input: SubmitFocusResponsesInput & { projectId: string; userId: string },
+  ): Promise<void> {
+    const { projectId, userId, responses } = input;
+
+    const project = await this.db.project.findFirst({
+      where: { id: projectId, userId },
+      include: {
+        focusForm: {
+          include: { items: { select: { id: true } } },
+        },
+      },
+    });
+
+    if (!project) {
+      throw new Error(`Project ${projectId} not found for user ${userId}`);
+    }
+
+    if (!project.focusForm) {
+      throw new Error(`Project ${projectId} has no focus form`);
+    }
+
+    const validItemIds = new Set(
+      project.focusForm.items.map((item) => item.id),
+    );
+
+    for (const response of responses) {
+      if (!validItemIds.has(response.focusItemId)) {
+        throw new Error(
+          `Focus item ${response.focusItemId} does not belong to project ${projectId}`,
+        );
+      }
+    }
+
+    const now = new Date();
+
+    await this.db.$transaction(
+      responses.map((response) =>
+        this.db.focusItem.update({
+          where: { id: response.focusItemId },
+          data: {
+            answer: response.answer,
+            answeredAt: now,
+          },
+        }),
+      ),
+    );
   }
 }
 

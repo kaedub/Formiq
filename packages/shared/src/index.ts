@@ -374,10 +374,23 @@ export interface ProjectContextMilestoneDto extends MilestoneDto {
 
 export interface ProjectContextProjectDto extends ProjectDto {
   milestones: ProjectContextMilestoneDto[];
+  focusForm: FocusFormDto | null;
+  promptExecutions: PromptExecutionDto[];
 }
 
 export interface ProjectContextDto {
   project: ProjectContextProjectDto;
+}
+
+// --- Focus Response Submission Types ---
+
+export interface SubmitFocusResponseInput {
+  focusItemId: string;
+  answer: string;
+}
+
+export interface SubmitFocusResponsesInput {
+  responses: SubmitFocusResponseInput[];
 }
 
 // --- AI Activity Output Types ---
