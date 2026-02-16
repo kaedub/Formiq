@@ -1,44 +1,29 @@
 import 'dotenv/config';
 import { Client, Connection } from '@temporalio/client';
-import type { GenerateProjectRoadmapInput, ProjectDto } from '@formiq/shared';
+import type { GenerateProjectRoadmapInput } from '@formiq/shared';
 import { TEST_USER_ID } from '@formiq/shared';
 
 const TEMPORAL_ADDRESS = process.env['TEMPORAL_ADDRESS'] ?? 'localhost:7233';
 const TEMPORAL_NAMESPACE = process.env['TEMPORAL_NAMESPACE'] ?? 'default';
 
-const sampleProject: ProjectDto = {
-  id: 'test-project-1',
+const input: GenerateProjectRoadmapInput = {
+  projectId: 'test-project-1',
   userId: TEST_USER_ID,
   title: 'Learn TypeScript',
   commitment: 'moderate',
   familiarity: 'some_experience',
   workStyle: 'short_daily_sessions',
-  status: 'draft',
-  generatedAt: null,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-  responses: [
+  focusItems: [
     {
-      question: {
-        id: 'goal',
-        prompt: 'What do you want to accomplish?',
-        questionType: 'free_text',
-        options: [],
-      },
-      answer: { questionId: 'goal', values: ['Build a full-stack web app'] },
+      id: 'goal',
+      question: 'What do you want to accomplish?',
+      questionType: 'free_text',
+      options: [],
+      position: 1,
+      answer: 'Build a full-stack web app',
+      answeredAt: new Date().toISOString(),
     },
   ],
-};
-
-const input: GenerateProjectRoadmapInput = {
-  userId: TEST_USER_ID,
-  project: sampleProject,
-  intakeAnswers: {
-    goal: 'Build a full-stack web app',
-    commitment: 'moderate',
-    familiarity: 'some_experience',
-    workStyle: 'short_daily_sessions',
-  },
 };
 
 async function main(): Promise<void> {
@@ -50,7 +35,7 @@ async function main(): Promise<void> {
 
   const handle = await client.workflow.start('GenerateProjectRoadmap', {
     taskQueue: 'workflow',
-    workflowId: `generate-roadmap-${input.project.id}`,
+    workflowId: `generate-roadmap-${input.projectId}`,
     args: [input],
   });
 

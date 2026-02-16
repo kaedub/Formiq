@@ -106,7 +106,6 @@ app.post('/projects', async (req, res) => {
   if (!isProjectWorkStyle(workStyle)) {
     return res.status(400).json({ message: 'workStyle is invalid' });
   }
-
   const goal = goalRaw.trim();
   console.info('Received new project intake', {
     goal,
@@ -194,18 +193,27 @@ app.put('/projects/:projectId/focus-responses', async (req, res) => {
       responses: responses as SubmitFocusResponsesInput['responses'],
     });
 
-    const context = await db.getProjectDetails({ userId, projectId });
-    const { project: projectDto } = context;
+    const { project } = await db.getProjectDetails({ userId, projectId });
+
+    if (!project.focusForm) {
+      console.error('Focus form not found for project', projectId);
+      return res
+        .status(500)
+        .json({ message: 'Unable to submit focus responses' });
+    }
+
+    const focusItems = project.focusForm.items.filter(
+      (item): item is typeof item & { answer: string } => item.answer !== null,
+    );
 
     const workflowInput: GenerateProjectRoadmapInput = {
-      userId,
-      project: projectDto,
-      intakeAnswers: {
-        goal: projectDto.title,
-        commitment: projectDto.commitment,
-        familiarity: projectDto.familiarity,
-        workStyle: projectDto.workStyle,
-      },
+      projectId: project.id,
+      userId: project.userId,
+      title: project.title,
+      commitment: project.commitment,
+      familiarity: project.familiarity,
+      workStyle: project.workStyle,
+      focusItems,
     };
 
     const temporal = await getTemporalClient();
@@ -219,7 +227,7 @@ app.put('/projects/:projectId/focus-responses', async (req, res) => {
       `Started GenerateProjectRoadmap workflow for project ${projectId}`,
     );
 
-    return res.json(context);
+    return res.json({ project });
   } catch (error) {
     console.error('Failed to submit focus responses', error);
     if (

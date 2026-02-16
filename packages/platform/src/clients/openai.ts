@@ -23,7 +23,6 @@ export const getOpenAIClient = (
   console.log('Getting OpenAI client...');
   if (!openAIInstance) {
     const apiKey = resolveApiKey(options);
-    console.log('ApiKey:', apiKey);
     openAIInstance = new OpenAI({ apiKey });
   }
 

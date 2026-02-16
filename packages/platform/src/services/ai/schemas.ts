@@ -27,7 +27,10 @@ export const projectContextSchema = z
     project: z
       .object({
         title: z.string().min(1),
-        responses: z.array(
+        commitment: z.string().min(1),
+        familiarity: z.string().min(1),
+        workStyle: z.string().min(1),
+        focusItems: z.array(
           z
             .object({
               question: z.string().min(1),

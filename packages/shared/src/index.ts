@@ -442,9 +442,9 @@ export interface AIActivities {
   generateFocusQuestions(
     input: FocusQuestionsContextInput,
   ): Promise<FocusQuestionsOutput>;
-  generateProjectOutline(input: {
-    project: ProjectDto;
-  }): Promise<ProjectOutlineOutput>;
+  generateProjectOutline(
+    input: ProjectOutlineContext,
+  ): Promise<ProjectOutlineOutput>;
   generateTasksForMilestone(input: {
     project: ProjectDto;
     milestone: MilestoneDto;
@@ -453,8 +453,14 @@ export interface AIActivities {
 
 // --- Workflow Input Types ---
 
-export interface GenerateProjectRoadmapInput {
+export interface ProjectOutlineContext {
+  projectId: string;
   userId: string;
-  project: ProjectDto;
-  intakeAnswers: ProjectIntakeAnswers;
+  title: string;
+  commitment: ProjectCommitment;
+  familiarity: ProjectFamiliarity;
+  workStyle: ProjectWorkStyle;
+  focusItems: FocusItemDto[];
 }
+
+export type GenerateProjectRoadmapInput = ProjectOutlineContext;

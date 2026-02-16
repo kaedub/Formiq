@@ -30,6 +30,7 @@ import type {
   ProjectCommitment,
   ProjectDto,
   ProjectFamiliarity,
+  ProjectOutlineContext,
   ProjectWorkStyle,
 } from '@formiq/shared';
 
@@ -171,9 +172,9 @@ export class ProjectOutlineGenerationRequest extends BaseGenerationRequest<
   outputSchema = projectOutlineSchema;
   context: ProjectContext;
 
-  constructor(client: OpenAI, project: ProjectDto) {
+  constructor(client: OpenAI, context: ProjectOutlineContext) {
     super(client);
-    this.context = new ProjectContext(project);
+    this.context = new ProjectContext(context);
   }
 
   buildUserPrompt(): string {

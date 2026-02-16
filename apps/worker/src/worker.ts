@@ -9,16 +9,42 @@ import {
   generateTasksForMilestone,
   getProjectFocusForm,
 } from '@formiq/activities';
-import { NativeConnection, Worker } from '@temporalio/worker';
+import {
+  DefaultLogger,
+  type LogEntry,
+  NativeConnection,
+  Runtime,
+  Worker,
+} from '@temporalio/worker';
 
 const TEMPORAL_ADDRESS = process.env['TEMPORAL_ADDRESS'] ?? 'localhost:7233';
 const TEMPORAL_NAMESPACE = process.env['TEMPORAL_NAMESPACE'] ?? 'default';
 
+function safeLogFunction(entry: LogEntry): void {
+  const { level, timestampNanos, message, meta } = entry;
+  const date = new Date(Number(timestampNanos / 1_000_000n));
+  const prefix = `${date.toISOString()} [${level}] ${message}`;
+  if (meta === undefined) {
+    process.stderr.write(`${prefix}\n`);
+  } else {
+    let metaStr: string;
+    try {
+      metaStr = JSON.stringify(meta);
+    } catch {
+      metaStr = '[meta not serializable]';
+    }
+    process.stderr.write(`${prefix} ${metaStr}\n`);
+  }
+}
+
 const run = async (): Promise<void> => {
+  Runtime.install({
+    logger: new DefaultLogger('INFO', safeLogFunction),
+  });
+
   const connection = await NativeConnection.connect({
     address: TEMPORAL_ADDRESS,
   });
-  console.log('Temporal connection:', connection);
 
   const namespace = TEMPORAL_NAMESPACE;
 

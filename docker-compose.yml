@@ -20,10 +20,14 @@ services:
     environment:
       DATABASE_URL: postgres://formiq:formiq@db:5432/formiq
       PORT: 3001
+      TEMPORAL_ADDRESS: host.docker.internal:7233
+      TEMPORAL_NAMESPACE: default
     ports:
       - '3001:3001'
     volumes:
       - ./:/workspace
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     depends_on:
       - db
 

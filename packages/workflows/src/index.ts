@@ -18,40 +18,15 @@ const ai = proxyActivities<AIActivities>({
 export async function GenerateProjectRoadmap(
   input: GenerateProjectRoadmapInput,
 ): Promise<void> {
-  const { project } = input;
-
-  // const { questions } = await ai.generateFocusQuestions(intakeAnswers);
-
-  // await db.createFocusForm({
-  //   userId: project.userId,
-  //   name: `focus-questions-${project.id}`,
-  //   projectId: project.id,
-  //   kind: 'focus_questions',
-  //   items: questions.map((question) => ({
-  //     question: question.prompt,
-  //     questionType: question.questionType,
-  //     options: question.options,
-  //     position: question.position,
-  //   })),
-  // });
-
-  // TODO: Add focus form generation and HITL to this workflow
-
-  // Phase 2: Generate and persist milestones
-  const outline = await ai.generateProjectOutline({ project });
+  const outline = await ai.generateProjectOutline(input);
 
   await db.createProjectMilestones({
-    userId: project.userId,
-    projectId: project.id,
+    userId: input.userId,
+    projectId: input.projectId,
     milestones: outline.milestones.map((m, index) => ({
       title: m.title,
       summary: m.description,
       position: index,
     })),
   });
-
-  // const projectDetails = await db.getProjectDetails({
-  //   projectId: project.id,
-  //   userId: project.userId,
-  // });
 }

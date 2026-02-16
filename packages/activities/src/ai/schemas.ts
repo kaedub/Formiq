@@ -52,6 +52,30 @@ const projectResponseSchema = z
   })
   .strict();
 
+const focusItemSchema = z
+  .object({
+    id: nonEmptyString,
+    question: nonEmptyString,
+    questionType: z.enum(QUESTION_TYPE_VALUES),
+    options: z.array(z.string()),
+    position: z.number().int().nonnegative(),
+    answer: z.string().nullable(),
+    answeredAt: z.string().nullable(),
+  })
+  .strict();
+
+export const projectOutlineContextSchema = z
+  .object({
+    projectId: nonEmptyString,
+    userId: nonEmptyString,
+    title: nonEmptyString,
+    commitment: z.enum(PROJECT_COMMITMENT_VALUES),
+    familiarity: z.enum(PROJECT_FAMILIARITY_VALUES),
+    workStyle: z.enum(PROJECT_WORK_STYLE_VALUES),
+    focusItems: z.array(focusItemSchema),
+  })
+  .strict();
+
 export const projectSchema = z
   .object({
     id: nonEmptyString,

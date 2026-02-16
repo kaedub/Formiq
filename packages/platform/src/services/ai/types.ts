@@ -1,6 +1,10 @@
 import type OpenAI from 'openai';
 import { z } from 'zod';
-import type { MilestoneDto, ProjectDto } from '@formiq/shared';
+import type {
+  MilestoneDto,
+  ProjectDto,
+  ProjectOutlineContext,
+} from '@formiq/shared';
 import {
   focusQuestionsFormSchema,
   projectOutlineMilestoneSchema,
@@ -31,9 +35,7 @@ export interface TaskGenerationContext {
   milestone: MilestoneDto;
 }
 
-export interface GenerateProjectOutlineArgs {
-  project: ProjectDto;
-}
+export type GenerateProjectOutlineArgs = ProjectOutlineContext;
 
 export interface GenerateTasksForMilestoneArgs {
   project: ProjectDto;

@@ -34,10 +34,10 @@ class OpenAIService implements AIService {
     return response;
   }
 
-  async generateProjectOutline({
-    project,
-  }: GenerateProjectOutlineArgs): Promise<ProjectOutline> {
-    const request = new ProjectOutlineGenerationRequest(this.client, project);
+  async generateProjectOutline(
+    context: GenerateProjectOutlineArgs,
+  ): Promise<ProjectOutline> {
+    const request = new ProjectOutlineGenerationRequest(this.client, context);
     const projectOutline = await request.execute();
     return projectOutline;
   }

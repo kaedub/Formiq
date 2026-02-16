@@ -1,19 +1,23 @@
-import type { FocusQuestionsContextInput, ProjectDto } from '@formiq/shared';
+import type {
+  FocusQuestionsContextInput,
+  ProjectDto,
+  ProjectOutlineContext,
+} from '@formiq/shared';
 import type { MilestoneDto } from '@formiq/shared';
 import type { z } from 'zod';
 import {
   focusQuestionsInputSchema,
   focusQuestionsOutputSchema,
+  projectOutlineContextSchema,
   projectOutlineOutputSchema,
   milestoneTasksOutputSchema,
-  projectSchema,
   taskGenerationContextSchema,
 } from './schemas.js';
 
 export type GenerateFocusQuestionsInput = FocusQuestionsContextInput;
 export type FocusQuestionsOutput = z.infer<typeof focusQuestionsOutputSchema>;
 
-export type GenerateProjectOutlineInput = { project: ProjectDto };
+export type GenerateProjectOutlineInput = ProjectOutlineContext;
 export type ProjectOutlineOutput = z.infer<typeof projectOutlineOutputSchema>;
 
 export type GenerateTasksForMilestoneInput = {
@@ -32,9 +36,8 @@ export const parseFocusQuestionsOutput = (
 
 export const parseGenerateProjectOutlineInput = (
   input: unknown,
-): GenerateProjectOutlineInput => ({
-  project: projectSchema.parse((input as { project: unknown }).project),
-});
+): GenerateProjectOutlineInput =>
+  projectOutlineContextSchema.parse(input) as GenerateProjectOutlineInput;
 
 export const parseProjectOutlineOutput = (
   value: unknown,
