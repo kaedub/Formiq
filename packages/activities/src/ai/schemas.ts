@@ -76,6 +76,7 @@ export const projectOutlineContextSchema = z
   })
   .strict();
 
+/** Strips extra keys (e.g. milestones, focusForm, promptExecutions) so workflow context can be passed in. */
 export const projectSchema = z
   .object({
     id: nonEmptyString,
@@ -90,7 +91,7 @@ export const projectSchema = z
     updatedAt: z.string(),
     responses: z.array(projectResponseSchema),
   })
-  .strict();
+  .strip();
 
 export const projectOutlineOutputSchema = z
   .object({
@@ -105,6 +106,7 @@ export const projectOutlineOutputSchema = z
   })
   .strict();
 
+/** Strips extra keys (e.g. tasks) so workflow context milestone can be passed in. */
 export const milestoneSchema = z
   .object({
     id: nonEmptyString,
@@ -115,7 +117,7 @@ export const milestoneSchema = z
     status: z.enum(MILESTONE_STATUS_VALUES),
     generatedAt: z.string(),
   })
-  .strict();
+  .strip();
 
 export const milestoneTasksOutputSchema = z
   .object({
@@ -138,4 +140,4 @@ export const taskGenerationContextSchema = z
     project: projectSchema,
     milestone: milestoneSchema,
   })
-  .strict();
+  .strip();

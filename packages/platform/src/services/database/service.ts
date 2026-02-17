@@ -51,8 +51,9 @@ class PrismaDatabaseService implements DatabaseService {
       },
       include: {
         milestones: {
+          orderBy: { position: 'asc' },
           include: {
-            tasks: true,
+            tasks: { orderBy: { position: 'asc' } },
           },
         },
         focusForm: {

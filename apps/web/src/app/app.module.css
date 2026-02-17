@@ -4,8 +4,8 @@
   gap: 1.5rem;
   padding: 2rem 3rem;
   min-height: 100vh;
-  background: radial-gradient(circle at 20% 20%, #f8fbff, #eef2ff 35%, #f7f7fb);
-  color: #0f172a;
+  background: var(--color-bg);
+  color: var(--color-text);
   font-family:
     'Inter',
     system-ui,
@@ -21,8 +21,8 @@
   align-items: center;
   justify-content: center;
   padding: 2.5rem;
-  background: radial-gradient(circle at 20% 20%, #f8fbff, #eef2ff 35%, #f7f7fb);
-  color: #0f172a;
+  background: var(--color-bg);
+  color: var(--color-text);
   font-family:
     'Inter',
     system-ui,
@@ -33,11 +33,11 @@
 }
 
 .homeCard {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 18px;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   padding: 2rem;
-  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+  box-shadow: var(--shadow-card);
   max-width: 760px;
   width: 100%;
   display: flex;
@@ -48,6 +48,7 @@
 .homeTitle {
   margin: 0.1rem 0 0.3rem;
   font-size: 2rem;
+  color: var(--color-text);
 }
 
 .errorBanner {
@@ -56,17 +57,17 @@
   justify-content: space-between;
   gap: 0.75rem;
   padding: 0.85rem 1rem;
-  border-radius: 12px;
-  background: #fef2f2;
-  border: 1px solid #fecdd3;
-  color: #991b1b;
+  border-radius: var(--radius-md);
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error-border);
+  color: var(--color-error-text);
 }
 
 .retryButton {
   padding: 0.55rem 0.9rem;
   border: none;
-  border-radius: 10px;
-  background: linear-gradient(120deg, #2563eb, #1d4ed8);
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
   color: #ffffff;
   font-weight: 700;
   cursor: pointer;
@@ -88,12 +89,12 @@
   align-items: center;
   justify-content: center;
   padding: 0.85rem 1rem;
-  border-radius: 12px;
-  background: linear-gradient(120deg, #2563eb, #1d4ed8);
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
   color: #ffffff;
   font-weight: 700;
   text-decoration: none;
-  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.25);
+  box-shadow: var(--shadow-button);
   transition:
     transform 120ms ease,
     box-shadow 120ms ease;
@@ -101,16 +102,17 @@
 
 .primaryLink:hover {
   transform: translateY(-1px);
-  box-shadow: 0 18px 40px rgba(37, 99, 235, 0.3);
+  box-shadow: var(--shadow-button-hover);
+  background: var(--color-primary-hover);
 }
 
 .homePlaceholder {
   margin-top: 0.5rem;
   padding: 0.9rem 1rem;
-  background: #f8fafc;
-  border: 1px dashed #cbd5e1;
-  border-radius: 12px;
-  color: #475569;
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
 }
 
 .projectList {
@@ -121,11 +123,11 @@
 }
 
 .projectCard {
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   padding: 1rem;
-  background: linear-gradient(145deg, #ffffff, #f8fbff);
-  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -136,7 +138,7 @@
 
 .projectCard:hover {
   transform: translateY(-2px);
-  box-shadow: 0 18px 38px rgba(15, 23, 42, 0.12);
+  box-shadow: var(--shadow-card);
 }
 
 .projectCardTop {
@@ -148,8 +150,8 @@
 .projectBadge {
   padding: 0.3rem 0.6rem;
   border-radius: 999px;
-  background: #eef2ff;
-  color: #312e81;
+  background: rgba(59, 130, 246, 0.2);
+  color: var(--color-primary);
   font-weight: 600;
   font-size: 0.9rem;
 }
@@ -157,14 +159,14 @@
 .projectStatus {
   margin: 0;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--color-text);
   text-transform: capitalize;
 }
 
 .projectTitleHome {
   margin: 0;
   font-size: 1.1rem;
-  color: #111827;
+  color: var(--color-text);
 }
 
 .projectCardActions {
@@ -176,12 +178,16 @@
   align-items: center;
   justify-content: center;
   padding: 0.55rem 0.9rem;
-  border-radius: 10px;
-  border: 1px solid #cbd5e1;
-  background: #f8fafc;
-  color: #1d4ed8;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-primary);
   font-weight: 600;
   text-decoration: none;
+}
+
+.secondaryLink:hover {
+  background: var(--color-surface);
 }
 
 .projectDetailsSection {
@@ -189,11 +195,11 @@
 }
 
 .panel {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 18px;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   padding: 1.75rem;
-  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+  box-shadow: var(--shadow-card);
 }
 
 .header {
@@ -204,18 +210,19 @@
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #64748b;
+  color: var(--color-text-muted);
   margin: 0;
 }
 
 .title {
   margin: 0.1rem 0 0.3rem;
   font-size: 1.8rem;
+  color: var(--color-text);
 }
 
 .lead {
   margin: 0;
-  color: #475569;
+  color: var(--color-text-muted);
 }
 
 .form {
@@ -229,14 +236,20 @@
   flex-direction: column;
   gap: 0.35rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--color-text);
 }
 
 .field input {
   padding: 0.75rem 0.9rem;
-  border: 1px solid #cbd5e1;
-  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   font-size: 1rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.field input::placeholder {
+  color: var(--color-text-muted);
 }
 
 .questions {
@@ -246,16 +259,16 @@
 }
 
 .questionCard {
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   padding: 0.9rem;
-  background: #f8fafc;
+  background: var(--color-surface);
 }
 
 .questionText {
   margin: 0 0 0.5rem;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--color-text);
 }
 
 .options {
@@ -269,28 +282,36 @@
   align-items: center;
   gap: 0.35rem;
   padding: 0.45rem 0.65rem;
-  border-radius: 8px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
   cursor: pointer;
 }
 
 .questionCard textarea {
   width: 100%;
-  border-radius: 10px;
-  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
   padding: 0.7rem;
   resize: vertical;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.questionCard textarea::placeholder {
+  color: var(--color-text-muted);
 }
 
 .submit {
   padding: 0.9rem 1rem;
   border: none;
-  background: linear-gradient(120deg, #2563eb, #1d4ed8);
+  background: var(--color-primary);
   color: #ffffff;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   font-weight: 700;
   cursor: pointer;
+  box-shadow: var(--shadow-button);
   transition:
     transform 120ms ease,
     box-shadow 120ms ease;
@@ -298,7 +319,8 @@
 
 .submit:hover {
   transform: translateY(-1px);
-  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.25);
+  box-shadow: var(--shadow-button-hover);
+  background: var(--color-primary-hover);
 }
 
 .submit:disabled {
@@ -310,18 +332,17 @@
 
 .status {
   margin: 0.3rem 0 0;
-  color: #0f172a;
+  color: var(--color-text);
   font-weight: 600;
 }
 
 .result {
-  background: #0f172a;
-  color: #e2e8f0;
-  border-radius: 18px;
+  background: var(--color-surface-elevated);
+  color: var(--color-text);
+  border-radius: var(--radius-lg);
   padding: 1.5rem;
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
-    0 18px 50px rgba(15, 23, 42, 0.35);
+  box-shadow: var(--shadow-card);
+  border-left: 3px solid var(--color-primary);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -330,12 +351,12 @@
 .projectTitle {
   font-size: 1.2rem;
   margin: 0;
-  color: #f8fafc;
+  color: var(--color-text);
 }
 
 .projectMeta {
   margin: 0;
-  color: #cbd5e1;
+  color: var(--color-text-muted);
 }
 
 .detailList {
@@ -349,8 +370,46 @@
 
 .detailList li {
   padding: 0.6rem 0.75rem;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-primary);
+}
+
+.milestoneDetails {
+  margin-top: 0.5rem;
+}
+
+.milestoneSummary {
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  list-style: none;
+  user-select: none;
+}
+
+.milestoneSummary::-webkit-details-marker {
+  display: none;
+}
+
+.milestoneTaskList {
+  list-style: none;
+  padding: 0.35rem 0 0 1rem;
+  margin: 0.5rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.milestoneTaskList li {
+  padding: 0.4rem 0.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-sm);
+}
+
+.taskDescription {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
 }
 
 @media (max-width: 900px) {

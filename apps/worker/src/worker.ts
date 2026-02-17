@@ -7,6 +7,7 @@ import {
   generateFocusQuestions,
   generateProjectOutline,
   generateTasksForMilestone,
+  getProjectDetails,
   getProjectFocusForm,
 } from '@formiq/activities';
 import {
@@ -72,6 +73,7 @@ const run = async (): Promise<void> => {
     namespace,
     taskQueue: 'database',
     activities: {
+      getProjectDetails,
       getProjectFocusForm,
       createFocusForm,
       createProjectMilestones,

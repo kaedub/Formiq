@@ -6,7 +6,7 @@ import {
 import {
   DEFAULT_MODEL,
   PROJECT_PLAN_PROMPT,
-  INTAKE_FORM_PROMPT,
+  FOCUS_FORM_PROMPT,
   TASK_GENERATION_PROMPT,
 } from './constants.js';
 import {
@@ -35,11 +35,10 @@ import type {
 } from '@formiq/shared';
 
 type FocusQuestionsUserContext = FocusQuestionsContextInput;
-type EffortLevel = 'beginner' | 'intermediate' | 'advanced';
 type FocusQuestionsPromptContext = {
   goal: string;
   time_per_week: number;
-  effort_level: EffortLevel;
+  effort_level: 'explore' | 'build' | 'master';
   commitment_choice: ProjectCommitment;
   familiarity_choice: ProjectFamiliarity;
   work_style: string;
@@ -52,10 +51,14 @@ const commitmentHoursMap: Record<ProjectCommitment, number> = {
   dedicated: 40,
 };
 
-const familiarityEffortLevelMap: Record<ProjectFamiliarity, EffortLevel> = {
-  completely_new: 'beginner',
-  some_experience: 'intermediate',
-  experienced_refining: 'advanced',
+const commitmentEffortLevelMap: Record<
+  ProjectCommitment,
+  'explore' | 'build' | 'master'
+> = {
+  light: 'explore',
+  moderate: 'build',
+  heavy: 'master',
+  dedicated: 'master',
 };
 
 const workStyleLabelMap: Record<ProjectWorkStyle, string> = {
@@ -123,7 +126,7 @@ export class FocusQuestionsRequest extends BaseGenerationRequest<
 > {
   name = 'focus_questions';
   model = DEFAULT_MODEL;
-  systemPrompt = INTAKE_FORM_PROMPT;
+  systemPrompt = FOCUS_FORM_PROMPT;
   description = 'FormIQ focus questions payload';
   inputSchema = null;
   outputSchema = focusQuestionsFormSchema;
@@ -140,7 +143,7 @@ export class FocusQuestionsRequest extends BaseGenerationRequest<
     return {
       goal,
       time_per_week: commitmentHoursMap[commitment],
-      effort_level: familiarityEffortLevelMap[familiarity],
+      effort_level: commitmentEffortLevelMap[commitment],
       commitment_choice: commitment,
       familiarity_choice: familiarity,
       work_style: workStyleLabelMap[workStyle],

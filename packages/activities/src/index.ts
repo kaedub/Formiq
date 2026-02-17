@@ -2,6 +2,7 @@ export {
   createFocusForm,
   createMilestoneTasks,
   createProjectMilestones,
+  getProjectDetails,
   getProjectFocusForm,
   replaceFocusFormItems,
 } from './database/index.js';

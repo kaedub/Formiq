@@ -29,4 +29,27 @@ export async function GenerateProjectRoadmap(
       position: index,
     })),
   });
+
+  const projectContext = await db.getProjectDetails({
+    projectId: input.projectId,
+    userId: input.userId,
+  });
+
+  for (const milestone of projectContext.project.milestones) {
+    const result = await ai.generateTasksForMilestone({
+      project: projectContext.project,
+      milestone,
+    });
+
+    await db.createMilestoneTasks({
+      projectId: input.projectId,
+      userId: input.userId,
+      milestoneId: milestone.id,
+      tasks: result.tasks.map((t, index) => ({
+        title: t.title,
+        description: [t.objective, t.body].filter(Boolean).join('\n\n'),
+        position: index + 1,
+      })),
+    });
+  }
 }

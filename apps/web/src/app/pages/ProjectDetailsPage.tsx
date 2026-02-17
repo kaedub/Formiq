@@ -256,12 +256,36 @@ export function ProjectDetailsPage(): JSX.Element {
               <div className={styles['projectDetailsSection']}>
                 <h2>Milestones</h2>
                 <ul className={styles['detailList']}>
-                  {project.milestones.map((milestone) => (
-                    <li key={milestone.id}>
-                      <strong>{milestone.title}</strong>
-                      <div>{milestone.summary}</div>
-                    </li>
-                  ))}
+                  {[...project.milestones]
+                    .sort((a, b) => a.position - b.position)
+                    .map((milestone) => {
+                      const sortedTasks = [...milestone.tasks].sort(
+                        (a, b) => a.position - b.position,
+                      );
+                      return (
+                        <li key={milestone.id}>
+                          <strong>{milestone.title}</strong>
+                          <div>{milestone.summary}</div>
+                          <details className={styles['milestoneDetails']}>
+                            <summary className={styles['milestoneSummary']}>
+                              Tasks ({sortedTasks.length})
+                            </summary>
+                            <ul className={styles['milestoneTaskList']}>
+                              {sortedTasks.map((task) => (
+                                <li key={task.id}>
+                                  <strong>{task.title}</strong>
+                                  {task.description && (
+                                    <div className={styles['taskDescription']}>
+                                      {task.description}
+                                    </div>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          </details>
+                        </li>
+                      );
+                    })}
                 </ul>
               </div>
             )}

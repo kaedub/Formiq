@@ -431,6 +431,7 @@ export interface MilestoneTasksOutput {
 // --- Activity Interfaces (used by proxyActivities in workflows) ---
 
 export interface DatabaseActivities {
+  getProjectDetails(input: GetProjectInput): Promise<ProjectContextDto>;
   getProjectFocusForm(input: GetProjectInput): Promise<FocusFormDto | null>;
   createFocusForm(input: CreateFormRecordInput): Promise<FormRecordDto>;
   replaceFocusFormItems(input: ReplaceFocusFormItemsInput): Promise<void>;

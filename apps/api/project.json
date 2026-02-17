@@ -8,7 +8,8 @@
       "options": {
         "command": "yarn tsc -b apps/api/tsconfig.json"
       },
-      "outputs": ["{projectRoot}/dist"]
+      "outputs": ["{projectRoot}/dist"],
+      "dependsOn": ["platform:build"]
     },
     "serve": {
       "executor": "nx:run-commands",

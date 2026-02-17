@@ -12,6 +12,12 @@ import {
 
 const databaseService = createDatabaseService({ db: getPrismaClient() });
 
+export const getProjectDetails: DatabaseActivities['getProjectDetails'] =
+  async (input) => {
+    const parsed = parseGetProjectFocusFormInput(input);
+    return databaseService.getProjectDetails(parsed);
+  };
+
 export const getProjectFocusForm: DatabaseActivities['getProjectFocusForm'] =
   async (input) => {
     const parsed = parseGetProjectFocusFormInput(input);

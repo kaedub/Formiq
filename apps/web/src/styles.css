@@ -1,1 +1,25 @@
-/* You can add global styles to this file, and also import other style files */
+/* Theme: dark default (Quest / Path) */
+:root {
+  /* Colors */
+  --color-bg: #0f172a;
+  --color-surface: #1e293b;
+  --color-surface-elevated: #334155;
+  --color-border: #334155;
+  --color-text: #f1f5f9;
+  --color-text-muted: #94a3b8;
+  --color-primary: #3b82f6;
+  --color-primary-hover: #60a5fa;
+  --color-error-bg: rgba(127, 29, 29, 0.4);
+  --color-error-border: #b91c1c;
+  --color-error-text: #fecaca;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+
+  /* Shadows (dark-appropriate: subtle glow / soft) */
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.25);
+  --shadow-button: 0 4px 14px rgba(59, 130, 246, 0.35);
+  --shadow-button-hover: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
